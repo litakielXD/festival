@@ -18,8 +18,13 @@ export async function createClient() {
           return cookieStore.getAll();
         },
         setAll(cookiesToSet: CookieToSet[]) {
-          for (const { name, value, options } of cookiesToSet) {
-            cookieStore.set(name, value, options);
+          try {
+            for (const { name, value, options } of cookiesToSet) {
+              cookieStore.set(name, value, options);
+            }
+          } catch {
+            // In Server Components, setting cookies is not allowed.
+            // Middleware refreshes auth cookies when needed.
           }
         }
       }

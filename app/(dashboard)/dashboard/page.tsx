@@ -1,56 +1,104 @@
 import Link from "next/link";
-import { createGroup, joinGroup } from "@/lib/actions/groups";
-import { getUserGroups } from "@/lib/supabase/queries";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { getRecentMessagesForUser, getUserFestivals } from "@/lib/supabase/queries";
+import { formatDateRange } from "@/lib/format/date";
 
 export default async function DashboardPage() {
-  const entries = await getUserGroups();
+  const [festivals, recentMessages] = await Promise.all([getUserFestivals(), getRecentMessagesForUser(8)]);
+  const today = new Date().toISOString().slice(0, 10);
+
+  const upcomingFestivals = festivals
+    .filter((festival) => (festival.starts_on ?? festival.ends_on ?? "9999-12-31") >= today)
+    .sort((a, b) => (a.starts_on ?? a.ends_on ?? "9999-12-31").localeCompare(b.starts_on ?? b.ends_on ?? "9999-12-31"))
+    .slice(0, 3);
+
+  const pastFestivals = festivals
+    .filter((festival) => (festival.ends_on ?? festival.starts_on ?? "0000-01-01") < today)
+    .sort((a, b) => (b.ends_on ?? b.starts_on ?? "0000-01-01").localeCompare(a.ends_on ?? a.starts_on ?? "0000-01-01"))
+    .slice(0, 3);
+
+  const latestMessages = recentMessages.slice(0, 5);
 
   return (
     <main className="space-y-8">
-      <section className="rounded-lg bg-card p-5">
-        <h1 className="mb-4 text-2xl font-semibold">Meine Gruppen</h1>
-        <div className="space-y-3">
-          {entries.map((entry) => (
-            <Link
-              key={entry.group.id}
-              href={`/dashboard/groups/${entry.group.id}/timeline`}
-              className="flex items-center justify-between rounded-md border border-slate-700 p-3"
-            >
-              <span>{entry.group.name}</span>
-              <span className="text-sm text-muted">{entry.role}</span>
+      <section className="grid gap-4 md:grid-cols-3">
+        <article className="rounded-lg border border-slate-300 bg-card p-4">
+          <h2 className="mb-3 text-lg font-semibold">Kommende Festivals</h2>
+          <div className="space-y-2 text-sm">
+            {upcomingFestivals.map((festival) => (
+              <Link
+                key={festival.id}
+                href={`/dashboard/festivals/${festival.id}/timeline`}
+                className="block rounded-md border border-slate-300 p-2 hover:bg-slate-100"
+              >
+                {festival.avatar_url ? (
+                  <img src={festival.avatar_url} alt={festival.name} className="mb-1 h-8 w-8 rounded-full border border-slate-300 object-cover" />
+                ) : null}
+                <p className="font-medium">{festival.name}</p>
+                <p className="text-muted">
+                  {formatDateRange(festival.starts_on, festival.ends_on)}
+                </p>
+              </Link>
+            ))}
+            {!upcomingFestivals.length ? <p className="text-muted">Keine kommenden Festivals.</p> : null}
+          </div>
+          <div className="mt-3">
+            <Link href="/dashboard/festivals" className="text-sm text-accent hover:underline">
+              Alle Festivals anzeigen
             </Link>
-          ))}
-          {!entries.length ? <p className="text-muted">Noch keine Gruppen vorhanden.</p> : null}
-        </div>
-      </section>
+          </div>
+        </article>
 
-      <section className="grid gap-4 md:grid-cols-2">
-        <form
-          action={async (formData) => {
-            "use server";
-            await createGroup(formData);
-          }}
-          className="space-y-3 rounded-lg border border-slate-700 p-5"
-        >
-          <h2 className="text-lg font-semibold">Neue Gruppe erstellen</h2>
-          <Input name="name" placeholder="Gruppenname" required />
-          <Button type="submit">Erstellen</Button>
-        </form>
-        <form
-          action={async (formData) => {
-            "use server";
-            await joinGroup(formData);
-          }}
-          className="space-y-3 rounded-lg border border-slate-700 p-5"
-        >
-          <h2 className="text-lg font-semibold">Gruppe beitreten</h2>
-          <Input name="groupId" placeholder="Gruppen-ID" required />
-          <Button type="submit" variant="secondary">
-            Beitreten
-          </Button>
-        </form>
+        <article className="rounded-lg border border-slate-300 bg-card p-4">
+          <h2 className="mb-3 text-lg font-semibold">Vergangene Festivals</h2>
+          <div className="space-y-2 text-sm">
+            {pastFestivals.map((festival) => (
+              <Link
+                key={festival.id}
+                href={`/dashboard/festivals/${festival.id}/timeline`}
+                className="block rounded-md border border-slate-300 p-2 hover:bg-slate-100"
+              >
+                {festival.avatar_url ? (
+                  <img src={festival.avatar_url} alt={festival.name} className="mb-1 h-8 w-8 rounded-full border border-slate-300 object-cover" />
+                ) : null}
+                <p className="font-medium">{festival.name}</p>
+                <p className="text-muted">
+                  {formatDateRange(festival.starts_on, festival.ends_on)}
+                </p>
+              </Link>
+            ))}
+            {!pastFestivals.length ? <p className="text-muted">Keine vergangenen Festivals.</p> : null}
+          </div>
+          <div className="mt-3">
+            <Link href="/dashboard/festivals" className="text-sm text-accent hover:underline">
+              Alle Festivals anzeigen
+            </Link>
+          </div>
+        </article>
+
+        <article className="rounded-lg border border-slate-300 bg-card p-4">
+          <h2 className="mb-3 text-lg font-semibold">Neueste Nachrichten</h2>
+          <div className="space-y-2 text-sm">
+            {latestMessages.map((message) => (
+              <Link
+                key={message.id}
+                href={`/dashboard/festivals/${message.festival_id}`}
+                className="block rounded-md border border-slate-300 p-2 hover:bg-slate-100"
+              >
+                <p className="font-medium">{message.festival_name}</p>
+                <p className="text-xs text-muted">
+                  {message.sender_name} an {message.recipient_name}
+                </p>
+                <p className="line-clamp-2">{message.content}</p>
+              </Link>
+            ))}
+            {!latestMessages.length ? <p className="text-muted">Keine Nachrichten vorhanden.</p> : null}
+          </div>
+          <div className="mt-3">
+            <Link href="/dashboard/festivals" className="text-sm text-accent hover:underline">
+              Alle Festival-Nachrichten anzeigen
+            </Link>
+          </div>
+        </article>
       </section>
     </main>
   );

@@ -4,11 +4,18 @@ import { getGroupContext } from "@/lib/supabase/queries";
 import { getSlotStatus } from "@/lib/timeline/status";
 import { GroupNav } from "@/components/group-nav";
 import { TimelineLiveRefresh } from "@/components/timeline-live-refresh";
+import { formatDateLong } from "@/lib/format/date";
 
 function statusClasses(status: ReturnType<typeof getSlotStatus>) {
   if (status === "running_now") return "border-success bg-green-900/30";
   if (status === "finished") return "border-slate-700 opacity-70";
   return "border-accent/60";
+}
+
+function statusLabel(status: ReturnType<typeof getSlotStatus>) {
+  if (status === "running_now") return "Laeuft jetzt";
+  if (status === "upcoming") return "Demnaechst";
+  return "Vorbei";
 }
 
 export default async function TimelinePage({ params }: { params: Promise<{ groupId: string }> }) {
@@ -52,23 +59,30 @@ export default async function TimelinePage({ params }: { params: Promise<{ group
       {days.map((day) => (
         <section key={day.id} className="rounded-lg bg-card p-4">
           <h2 className="mb-3 text-lg font-semibold">
-            {day.label} ({format(new Date(day.date), "dd.MM.yyyy")})
+            {day.label} ({formatDateLong(day.date)})
           </h2>
           <div className="space-y-2">
             {(groupedByDay.get(day.id) ?? []).map((slot) => {
               const status = getSlotStatus(slot.starts_at, slot.ends_at);
               return (
-                <article key={slot.id} className={`rounded-md border p-3 ${statusClasses(status)}`}>
-                  <p className="font-medium">{Array.isArray(slot.bands) ? slot.bands[0]?.name : slot.bands?.name}</p>
-                  <p className="text-sm text-muted">
+                <article key={slot.id} data-slot-status={status} className={`rounded-md border p-3 ${statusClasses(status)}`}>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-medium">{Array.isArray(slot.bands) ? slot.bands[0]?.name : slot.bands?.name}</p>
+                    {status === "running_now" ? (
+                      <span className="rounded-full bg-red-600 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-white">
+                        Live
+                      </span>
+                    ) : null}
+                  </div>
+                  <p className="text-sm text-muted font-mono [font-variant-numeric:tabular-nums]">
                     {format(new Date(slot.starts_at), "HH:mm")} - {format(new Date(slot.ends_at), "HH:mm")}
                     {slot.stage ? ` | ${slot.stage}` : ""}
                   </p>
-                  <p className="text-xs uppercase tracking-wide">{status}</p>
+                  <p className="text-xs uppercase tracking-wide">{statusLabel(status)}</p>
                 </article>
               );
             })}
-            {!(groupedByDay.get(day.id) ?? []).length ? <p className="text-sm text-muted">Keine Slots fuer diesen Tag.</p> : null}
+            {!(groupedByDay.get(day.id) ?? []).length ? <p className="text-sm text-muted">Keine Slots für diesen Tag.</p> : null}
           </div>
         </section>
       ))}

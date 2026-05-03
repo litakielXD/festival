@@ -9,11 +9,11 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#0b1020",
-        card: "#141a2e",
-        foreground: "#eef2ff",
-        muted: "#9ca3af",
-        accent: "#8b5cf6",
+        background: "#d9e0ea",
+        card: "#e8eef9",
+        foreground: "#1f2a44",
+        muted: "#5f6f8c",
+        accent: "#4f73b8",
         success: "#22c55e",
         danger: "#ef4444"
       }

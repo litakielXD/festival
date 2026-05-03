@@ -2,12 +2,195 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --bg: #e5e7eb;
+  --fg: #1f2937;
+  --card-bg: #ffffff;
+  --card-border: rgba(0, 0, 0, 0.2);
+  --card-shadow: 4px 4px 0 0 rgba(0, 0, 0, 0.1);
+  --accent-neon: #22d3ee;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0a0a0a;
+    --fg: #e5e7eb;
+    --card-bg: rgba(20, 20, 24, 0.88);
+    --card-border: rgba(255, 255, 255, 0.14);
+    --card-shadow: 0 10px 34px rgba(0, 0, 0, 0.45);
+    --accent-neon: #22d3ee;
+  }
+}
+
 body {
-  background: #0b1020;
-  color: #eef2ff;
+  position: relative;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.045;
+  z-index: -1;
+  background-image:
+    radial-gradient(rgba(0, 0, 0, 0.18) 0.6px, transparent 0.6px),
+    linear-gradient(120deg, rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.03));
+  background-size: 3px 3px, cover;
 }
 
 a {
   color: inherit;
   text-decoration: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  body::before {
+    opacity: 0.03;
+  }
+}
+
+@layer components {
+  .festival-headline {
+    @apply text-2xl font-black tracking-tight;
+  }
+
+  .festival-card {
+    @apply rounded-xl border;
+    background: var(--card-bg);
+    border-color: var(--card-border);
+    box-shadow: var(--card-shadow);
+  }
+
+  .festival-card-active {
+    @apply rounded-xl border;
+    background: var(--card-bg);
+    border-color: color-mix(in srgb, var(--accent-neon) 55%, var(--card-border));
+    box-shadow:
+      var(--card-shadow),
+      0 0 12px color-mix(in srgb, var(--accent-neon) 42%, transparent);
+  }
+
+  .time-mono {
+    @apply font-mono;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .live-flicker {
+    animation: live-flicker 1.75s linear infinite;
+  }
+
+  .genre-badge {
+    @apply inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide;
+    border-color: var(--card-border);
+    background: color-mix(in srgb, var(--card-bg) 84%, #ffffff 16%);
+  }
+
+  .genre-metal {
+    border-style: dashed;
+  }
+
+  .genre-techno {
+    border-color: color-mix(in srgb, var(--accent-neon) 58%, var(--card-border));
+    box-shadow: 0 0 8px color-mix(in srgb, var(--accent-neon) 35%, transparent);
+  }
+
+  .genre-punk {
+    transform: translateY(-0.5px);
+  }
+
+  .genre-indie {
+    background: color-mix(in srgb, var(--card-bg) 80%, #f3f4f6 20%);
+  }
+
+  .festival-genre-metal {
+    border-style: dashed;
+  }
+
+  .festival-genre-techno {
+    box-shadow:
+      var(--card-shadow),
+      0 0 12px color-mix(in srgb, var(--accent-neon) 36%, transparent);
+  }
+
+  .festival-tab-link {
+    @apply rounded-md border px-3 py-2 transition-transform duration-150;
+    min-height: 44px;
+  }
+
+  .festival-tab-link-active {
+    @apply border-accent bg-accent/15;
+    animation: tab-snap-in 180ms ease-out;
+  }
+
+  .festival-tab-link-idle {
+    @apply border-slate-300 hover:bg-slate-100;
+  }
+
+  .festival-button-tactile {
+    @apply transition-[transform,box-shadow,background-color,color,border-color] duration-150;
+    min-height: 40px;
+  }
+
+  .festival-button-tactile:active {
+    transform: translateY(1px) scale(0.98);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-neon) 45%, transparent);
+    filter: saturate(1.15);
+  }
+}
+
+@keyframes live-flicker {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 rgba(34, 211, 238, 0);
+  }
+  9% {
+    opacity: 0.88;
+  }
+  11% {
+    opacity: 1;
+  }
+  47% {
+    opacity: 0.92;
+  }
+  50% {
+    opacity: 0.74;
+  }
+  53% {
+    opacity: 1;
+    box-shadow: 0 0 10px rgba(34, 211, 238, 0.28);
+  }
+}
+
+@keyframes tab-snap-in {
+  0% {
+    transform: translateX(8px);
+    opacity: 0.75;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .live-flicker {
+    animation: none !important;
+  }
+
+  .festival-tab-link-active {
+    animation: none !important;
+  }
 }
