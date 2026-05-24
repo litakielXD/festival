@@ -76,14 +76,14 @@ Die App ist ein kollaborativer Festival-Planer für Gruppen. Ein System-Admin ve
 - [ ] Dashboard-Karten haben keine Hover-Animation / aktiven Zustände
 - [ ] Festival-Nav (Desktop) hat keine aktiven Zustandsmarkierungen
 - [ ] Admin-Seite: lange, unstrukturierte Seite ohne Accordion-State-Persistenz
-- [ ] Nachrichten-Bereich im Festival ist flach (keine Bubble-Chat-UI, kein Zeitstempel prominent)
+- [x] Nachrichten-Bereich im Festival ist flach (keine Bubble-Chat-UI, kein Zeitstempel prominent)
 - [ ] Fehlende Ladeanimationen / Skeleton-States
 - [ ] Keine konsistente Toast/Feedback-Komponente (aktuell: diverse `text-xs text-rose-700` etc.)
 
 ### 2.2 Funktionen
 - [x] **Selbstregistrierung fertigstellen:** `/register`-Seite, `/auth/confirm`-Route, Redirect nach Erfolg, Hinweis wenn Dashboard leer (kein Festival zugewiesen)
 - [ ] Band-Slot-Zeiten nur per Admin editierbar; Members können keine Uhrzeit-Vorschläge machen
-- [ ] Keine Suche/Filter in der Band-Liste
+- [x] Keine Suche/Filter in der Band-Liste
 - [ ] Kein Gruppen-Chatroom (nur 1:1-DMs)
 - [ ] Keine Push-Notifications / Echtzeit-Updates via Supabase Realtime (nur Timer-Polling)
 - [ ] Profilseite (`/dashboard/profile`) vorhanden aber rudimentär
