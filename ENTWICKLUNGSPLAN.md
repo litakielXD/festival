@@ -87,7 +87,7 @@ Die App ist ein kollaborativer Festival-Planer für Gruppen. Ein System-Admin ve
 - [ ] Kein Gruppen-Chatroom (nur 1:1-DMs)
 - [ ] Keine Push-Notifications / Echtzeit-Updates via Supabase Realtime (nur Timer-Polling)
 - [ ] Profilseite (`/dashboard/profile`) vorhanden aber rudimentär
-- [ ] Kein Dark-Mode-Toggle (nur System-Präferenz)
+- [x] Kein Dark-Mode-Toggle (nur System-Präferenz)
 
 ### 2.3 Code-Qualität
 - [ ] Inline Server Actions in Page-Komponenten (`action={async (formData) => { "use server"; ... }}`) → besser in `lib/actions/` auslagern
