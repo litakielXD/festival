@@ -14,6 +14,7 @@ import { slotGenreAccentClass } from "@/lib/genre/normalize";
 import { getSlotStatus } from "@/lib/timeline/status";
 import { formatDateLong } from "@/lib/format/date";
 import { acceptSlotProposal, deleteSlotProposal, submitSlotProposal } from "@/lib/actions/proposals";
+import { toast } from "@/components/ui/toast";
 
 type TimelineSlot = {
   id: string;
@@ -417,9 +418,10 @@ export function FestivalTimelineCachedView({
                                   if (res.success) {
                                     setProposals((prev) => prev.filter((p) => p.bandId !== sheetBand.id));
                                     setSheetBand(null);
+                                    toast.success("Band erfolgreich eingeplant!");
                                     router.refresh();
                                   } else {
-                                    alert(res.error);
+                                    toast.error(res.error || "Fehler beim Einplanen.");
                                   }
                                 }}
                               >
@@ -437,9 +439,10 @@ export function FestivalTimelineCachedView({
                                   const res = await deleteSlotProposal(formData);
                                   if (res.success) {
                                     setProposals((prev) => prev.filter((p) => p.id !== prop.id));
+                                    toast.success("Vorschlag erfolgreich gelöscht.");
                                     router.refresh();
                                   } else {
-                                    alert(res.error);
+                                    toast.error(res.error || "Fehler beim Löschen.");
                                   }
                                 }}
                               >
@@ -476,9 +479,10 @@ export function FestivalTimelineCachedView({
                                 const res = await deleteSlotProposal(formData);
                                 if (res.success) {
                                   setProposals((prev) => prev.filter((p) => p.id !== myProp.id));
+                                  toast.success("Dein Vorschlag wurde zurückgezogen.");
                                   router.refresh();
                                 } else {
-                                  alert(res.error);
+                                  toast.error(res.error || "Fehler beim Löschen.");
                                 }
                               }}
                             >
@@ -509,7 +513,7 @@ export function FestivalTimelineCachedView({
                             const stage = String(formData.get("stage") || "");
                             
                             if (!starts || !ends) {
-                              alert("Bitte Start- und Endzeit angeben.");
+                              toast.error("Bitte Start- und Endzeit angeben.");
                               return;
                             }
                             
@@ -534,9 +538,10 @@ export function FestivalTimelineCachedView({
                             const res = await submitSlotProposal(submitData);
                             if (res.success) {
                               setSheetBand(null);
+                              toast.success("Vorschlag erfolgreich eingereicht!");
                               router.refresh();
                             } else {
-                              alert(res.error);
+                              toast.error(res.error || "Fehler beim Einreichen.");
                             }
                           }}
                         >

@@ -1,8 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { addFestivalBandGenre } from "@/lib/actions/festival-band-genres";
+import { toast } from "@/components/ui/toast";
 
 export function FestivalBandGenreAdd({
   festivalId,
@@ -20,22 +21,11 @@ export function FestivalBandGenreAdd({
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [genre, setGenre] = useState("");
-  const [msg, setMsg] = useState("");
-  const [msgTone, setMsgTone] = useState<"error" | "success">("error");
-  const [toast, setToast] = useState("");
   const [pending, startTransition] = useTransition();
   const atMax = mergedGenres.length >= 3;
   const countLabel = `${mergedGenres.length}/3`;
 
-  useEffect(() => {
-    if (!toast) return;
-    const timer = window.setTimeout(() => setToast(""), 1800);
-    return () => window.clearTimeout(timer);
-  }, [toast]);
-
   function submit() {
-    setMsg("");
-    setMsgTone("error");
     const t = genre.trim();
     if (!t) return;
     startTransition(async () => {
@@ -45,17 +35,13 @@ export function FestivalBandGenreAdd({
           setGenre("");
           setOpen(false);
           onGenreAdded?.(t);
-          setMsg("Genre hinzugefügt.");
-          setMsgTone("success");
-          setToast("Genre hinzugefügt");
+          toast.success(`Genre "${t}" hinzugefügt!`);
           router.refresh();
         } else {
-          setMsg(r.message);
-          setMsgTone("error");
+          toast.error(r.message || "Genre konnte nicht hinzugefügt werden.");
         }
       } catch {
-        setMsg("Speichern fehlgeschlagen. Bitte Verbindung zu Supabase prüfen und erneut versuchen.");
-        setMsgTone("error");
+        toast.error("Speichern fehlgeschlagen. Bitte Verbindung prüfen und erneut versuchen.");
       }
     });
   }
@@ -86,8 +72,6 @@ export function FestivalBandGenreAdd({
         <button
           type="button"
           onClick={() => {
-            setMsg("");
-            setMsgTone("error");
             setOpen(true);
           }}
           title="Genre hinzufügen"
@@ -121,8 +105,6 @@ export function FestivalBandGenreAdd({
           }
           if (e.key === "Escape") {
             setOpen(false);
-            setMsg("");
-            setMsgTone("error");
             setGenre("");
           }
         }}
@@ -140,24 +122,12 @@ export function FestivalBandGenreAdd({
         disabled={pending}
         onClick={() => {
           setOpen(false);
-          setMsg("");
-          setMsgTone("error");
           setGenre("");
         }}
         className="rounded border border-transparent px-1 py-1 text-xs text-muted hover:underline"
       >
         Abbrechen
       </button>
-      {msg ? (
-        <span className={`basis-full text-xs ${msgTone === "success" ? "text-emerald-700" : "text-rose-600"}`} role="alert">
-          {msg}
-        </span>
-      ) : null}
-      {toast ? (
-        <span className="fixed bottom-4 right-4 z-[60] rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs text-emerald-800 shadow-md">
-          {toast}
-        </span>
-      ) : null}
     </span>
   );
 }

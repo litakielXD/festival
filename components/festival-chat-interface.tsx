@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { sendFestivalMessage, deleteFestivalMessage } from "@/lib/actions/festival";
+import { toast } from "@/components/ui/toast";
 
 type MemberItem = {
   user_id: string;
@@ -160,7 +161,7 @@ export function FestivalChatInterface({
         // Remove optimistic message on error and restore input
         setOptimisticMessages((prev) => prev.filter((m) => m.id !== tempId));
         setInputContent(content);
-        alert(res.error);
+        toast.error(res.error || "Fehler beim Senden der Nachricht.");
       } else {
         router.refresh();
       }
@@ -178,9 +179,10 @@ export function FestivalChatInterface({
     startTransition(async () => {
       const res = await deleteFestivalMessage(formData);
       if (res && "error" in res) {
-        alert(res.error);
+        toast.error(res.error || "Fehler beim Löschen der Nachricht.");
         router.refresh();
       } else {
+        toast.success("Nachricht erfolgreich gelöscht.");
         router.refresh();
       }
     });

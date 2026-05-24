@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { ToastContainer } from "@/components/ui/toast";
 
 const appName = process.env.NEXT_PUBLIC_APP_NAME || "Festival Planner";
 
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-screen bg-background text-foreground transition-colors duration-200">
         {children}
+        <ToastContainer />
       </body>
     </html>
   );
