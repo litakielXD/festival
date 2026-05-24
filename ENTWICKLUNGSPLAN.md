@@ -81,7 +81,7 @@ Die App ist ein kollaborativer Festival-Planer für Gruppen. Ein System-Admin ve
 - [ ] Keine konsistente Toast/Feedback-Komponente (aktuell: diverse `text-xs text-rose-700` etc.)
 
 ### 2.2 Funktionen
-- [ ] **Selbstregistrierung fertigstellen:** `/register`-Seite, `/auth/confirm`-Route, Redirect nach Erfolg, Hinweis wenn Dashboard leer (kein Festival zugewiesen)
+- [x] **Selbstregistrierung fertigstellen:** `/register`-Seite, `/auth/confirm`-Route, Redirect nach Erfolg, Hinweis wenn Dashboard leer (kein Festival zugewiesen)
 - [ ] Band-Slot-Zeiten nur per Admin editierbar; Members können keine Uhrzeit-Vorschläge machen
 - [ ] Keine Suche/Filter in der Band-Liste
 - [ ] Kein Gruppen-Chatroom (nur 1:1-DMs)
@@ -96,9 +96,9 @@ Die App ist ein kollaborativer Festival-Planer für Gruppen. Ein System-Admin ve
 - [ ] `components/ui/` hat nur `button.tsx` + `input.tsx`; kein konsistentes Design-System
 
 ### 2.4 Deploy / DevOps
-- [ ] Kein `push-and-deploy.sh`-Äquivalent (analog zu mathe) — → **wird in Phase 3 ergänzt**
-- [ ] Kein Server-seitiger `deploy-server.sh` (für git-pull + pm2/systemd-Restart auf dem Server)
-- [ ] Kein automatisches Syntax/Type-Check vor Commit
+- [x] Kein `push-and-deploy.sh`-Äquivalent (analog zu mathe) — → **erfolgreich umgesetzt**
+- [x] Kein Server-seitiger `deploy-server.sh` (für git-pull + pm2/systemd-Restart auf dem Server)
+- [x] Kein automatisches Syntax/Type-Check vor Commit
 - [ ] `ENTWICKLUNGSPLAN_14_TAGE.md` war leer
 
 ---

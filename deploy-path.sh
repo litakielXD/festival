@@ -10,7 +10,7 @@ REMOTE_USER="${REMOTE_USER:-lita}"
 REMOTE_PORT="${REMOTE_PORT:-22}"
 # DocumentRoot des vhosts festival.mondschule.de — falls abweichend, überschreiben:
 #   REMOTE_BASE=/pfad/zum/documentroot ./deploy-path.sh
-REMOTE_BASE="${REMOTE_BASE:-/var/www/festival.mondschule.de}"
+REMOTE_BASE="${REMOTE_BASE:-/var/www/mondschule.de/public_html/festival}"
 
 SRC_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SRC_DIR"

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { requestPasswordReset, signInWithEmail } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 
 const initialState = { error: "", message: "" };
 
-export default function LoginPage() {
+function LoginForm() {
   const searchParams = useSearchParams();
   const urlError = searchParams.get("error");
 
@@ -112,5 +112,22 @@ export default function LoginPage() {
         ) : null}
       </form>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center gap-6 px-6 py-12">
+          <div>
+            <h1 className="text-3xl font-bold font-serif text-slate-800 dark:text-slate-100">Anmelden</h1>
+            <p className="mt-1 text-sm text-muted">Lade Anmeldebereich …</p>
+          </div>
+        </main>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

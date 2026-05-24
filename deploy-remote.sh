@@ -24,7 +24,7 @@ set -euo pipefail
 REMOTE_HOST="${REMOTE_HOST:-178.254.6.104}"
 REMOTE_USER="${REMOTE_USER:-lita}"
 REMOTE_PORT="${REMOTE_PORT:-22}"
-REMOTE_PROJECT_DIR="${REMOTE_PROJECT_DIR:-/var/www/festival.mondschule.de}"
+REMOTE_PROJECT_DIR="${REMOTE_PROJECT_DIR:-/var/www/mondschule.de/public_html/festival}"
 REMOTE_SERVICE_NAME="${REMOTE_SERVICE_NAME:-festival}"
 
 TARGET="$REMOTE_USER@$REMOTE_HOST"
@@ -33,46 +33,25 @@ echo "Service (pm2): $REMOTE_SERVICE_NAME"
 
 ssh -tt -p "$REMOTE_PORT" -o ServerAliveInterval=15 -o ServerAliveCountMax=4 "$TARGET" "bash -s" <<EOF
 set -euo pipefail
+export PATH=~/.npm-global/bin:\$PATH
 cd "$REMOTE_PROJECT_DIR"
 
 if [[ ! -d .git ]]; then
   echo "Fehler: Kein Git-Checkout in $REMOTE_PROJECT_DIR" >&2
-  echo "Bitte einmalig per: git clone https://github.com/litakielxd/festival.git $REMOTE_PROJECT_DIR" >&2
   exit 1
 fi
 
-# Lokale Änderungen stashen falls vorhanden (z.B. .env.production wurde nicht ignoriert)
-if [[ -n "\$(git status --porcelain -- ':!.env.production' ':!.env' ':!.env.local')" ]]; then
-  echo "Stashe lokale Änderungen …"
-  git stash push -u -m "deploy-auto-\$(date +%Y%m%d-%H%M%S)" >/dev/null || true
+# Bootstrapping: falls deploy-server.sh noch nicht auf dem Server existiert, einmalig pullen
+if [[ ! -f ./deploy-server.sh ]]; then
+  echo "Bootstrap: deploy-server.sh fehlt – git pull (ggf. lokale Änderungen stashen) …"
+  if [[ -n "\$(git status --porcelain)" ]]; then
+    git stash push -u -m "deploy-bootstrap-\$(date +%Y%m%d-%H%M%S)" >/dev/null || true
+  fi
+  git pull --rebase origin main || git pull --rebase
 fi
 
-echo "==> git pull --rebase origin main"
-git pull --rebase origin main
-
-echo "==> npm ci --omit=dev (falls package-lock.json geändert)"
-npm ci --omit=dev
-
-echo "==> npm run build"
-npm run build
-
-echo "==> pm2 restart $REMOTE_SERVICE_NAME"
-if pm2 describe "$REMOTE_SERVICE_NAME" >/dev/null 2>&1; then
-  pm2 restart "$REMOTE_SERVICE_NAME"
-else
-  echo "pm2-Prozess '$REMOTE_SERVICE_NAME' nicht gefunden."
-  echo "Starte neu mit: pm2 start .next/standalone/server.js --name $REMOTE_SERVICE_NAME -- --port 3016"
-  NODE_ENV=production PORT=3016 pm2 start .next/standalone/server.js \
-    --name "$REMOTE_SERVICE_NAME" \
-    --env production \
-    -- --port 3016 || true
-fi
-
-echo "==> pm2 save"
-pm2 save
-
-echo ""
-echo "Deploy fertig. Live unter: https://festival.mondschule.de"
+chmod +x ./deploy-server.sh
+./deploy-server.sh "$REMOTE_SERVICE_NAME" --auto-stash
 EOF
 
 echo "deploy-remote.sh fertig."
