@@ -5,6 +5,7 @@ import { requireUser } from "@/lib/auth/guards";
 import { isSystemAdminEmail } from "@/lib/auth/roles";
 import { MainMenu } from "@/components/main-menu";
 import { OfflineIndicator } from "@/components/offline-indicator";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser();
@@ -27,6 +28,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </div>
         <div className="flex items-center gap-3">
           <OfflineIndicator />
+          <ThemeToggle />
           <Link href="/dashboard/profile" className="block" aria-label="Zum Profil">
             {profile?.avatar_url ? (
               <img src={profile.avatar_url} alt="Profilbild" className="h-9 w-9 rounded-full border border-slate-300 object-cover" />

@@ -11,15 +11,13 @@
   --accent-neon: #22d3ee;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0a0a0a;
-    --fg: #e5e7eb;
-    --card-bg: rgba(20, 20, 24, 0.88);
-    --card-border: rgba(255, 255, 255, 0.14);
-    --card-shadow: 0 10px 34px rgba(0, 0, 0, 0.45);
-    --accent-neon: #22d3ee;
-  }
+.dark {
+  --bg: #0a0a0a;
+  --fg: #e5e7eb;
+  --card-bg: rgba(20, 20, 24, 0.88);
+  --card-border: rgba(255, 255, 255, 0.14);
+  --card-shadow: 0 10px 34px rgba(0, 0, 0, 0.45);
+  --accent-neon: #22d3ee;
 }
 
 body {
@@ -46,10 +44,8 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  body::before {
-    opacity: 0.03;
-  }
+.dark body::before {
+  opacity: 0.03;
 }
 
 @layer components {
