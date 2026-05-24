@@ -77,7 +77,7 @@ Die App ist ein kollaborativer Festival-Planer für Gruppen. Ein System-Admin ve
 - [ ] Festival-Nav (Desktop) hat keine aktiven Zustandsmarkierungen
 - [ ] Admin-Seite: lange, unstrukturierte Seite ohne Accordion-State-Persistenz
 - [x] Nachrichten-Bereich im Festival ist flach (keine Bubble-Chat-UI, kein Zeitstempel prominent)
-- [ ] Fehlende Ladeanimationen / Skeleton-States
+- [x] Fehlende Ladeanimationen / Skeleton-States
 - [ ] Keine konsistente Toast/Feedback-Komponente (aktuell: diverse `text-xs text-rose-700` etc.)
 
 ### 2.2 Funktionen
