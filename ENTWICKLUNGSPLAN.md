@@ -14,6 +14,7 @@ Die App ist ein kollaborativer Festival-Planer für Gruppen. Ein System-Admin ve
 
 #### Authentifizierung & Routing
 - E-Mail/Passwort-Login via Supabase Auth (`/login`, `/reset-password`)
+- **Selbstregistrierung:** `signUpWithEmail`-Action in `lib/actions/auth.ts` vorhanden — als Formular auf `/login` eingebaut (unfertig, kein eigener Bereich, kein Confirmation-Callback)
 - Middleware-Schutz: alle `/dashboard/*`-Routen → Redirect auf `/login` wenn nicht eingeloggt
 - Logout via Server Action
 
@@ -80,6 +81,7 @@ Die App ist ein kollaborativer Festival-Planer für Gruppen. Ein System-Admin ve
 - [ ] Keine konsistente Toast/Feedback-Komponente (aktuell: diverse `text-xs text-rose-700` etc.)
 
 ### 2.2 Funktionen
+- [ ] **Selbstregistrierung fertigstellen:** `/register`-Seite, `/auth/confirm`-Route, Redirect nach Erfolg, Hinweis wenn Dashboard leer (kein Festival zugewiesen)
 - [ ] Band-Slot-Zeiten nur per Admin editierbar; Members können keine Uhrzeit-Vorschläge machen
 - [ ] Keine Suche/Filter in der Band-Liste
 - [ ] Kein Gruppen-Chatroom (nur 1:1-DMs)

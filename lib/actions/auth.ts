@@ -52,32 +52,60 @@ export async function signInWithEmail(formData: FormData) {
 }
 
 export async function signUpWithEmail(formData: FormData) {
-  const email = String(formData.get("email") || "");
+  const email = String(formData.get("email") || "").trim().toLowerCase();
   const password = String(formData.get("password") || "");
   const username = normalizeManagedIdentifier(String(formData.get("username") || "").trim());
   const supabase = await createClient();
 
+  if (!email || !email.includes("@")) {
+    return { error: "Bitte eine gültige E-Mail-Adresse eingeben." };
+  }
   if (!username) {
     return { error: "Benutzername ist erforderlich." };
   }
+  if (password.length < 6) {
+    return { error: "Das Passwort muss mindestens 6 Zeichen lang sein." };
+  }
 
+  const baseUrl = await getBaseUrl();
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { username, display_name: username, role: "member" } }
+    options: {
+      data: { username, display_name: username, role: "member" },
+      emailRedirectTo: `${baseUrl}/auth/confirm`
+    }
   });
-  if (error || !data.user) {
-    return { error: error?.message ?? "Konto konnte nicht erstellt werden." };
+
+  if (error) {
+    // Supabase gibt bei bereits registrierter E-Mail keinen Fehler zurück (Security),
+    // aber wir können den häufigsten Fall übersetzen
+    const msg = error.message.toLowerCase();
+    if (msg.includes("already registered") || msg.includes("already exists")) {
+      return { error: "Diese E-Mail-Adresse ist bereits registriert." };
+    }
+    if (msg.includes("password")) {
+      return { error: "Das Passwort erfüllt nicht die Mindestanforderungen (min. 6 Zeichen)." };
+    }
+    return { error: error.message };
+  }
+
+  if (!data.user) {
+    return { error: "Konto konnte nicht erstellt werden. Bitte versuche es erneut." };
   }
 
   const { error: profileError } = await supabase
     .from("profiles")
     .upsert({ user_id: data.user.id, display_name: username }, { onConflict: "user_id" });
   if (profileError) {
-    return { error: profileError.message };
+    console.error("[signUpWithEmail] profile upsert error:", profileError.message);
+    // Kein Hard-Fail — Profil kann auch nachträglich erstellt werden
   }
 
-  return { message: "Konto erstellt. Bitte prüfe deine E-Mail für die Bestätigung." };
+  return {
+    message:
+      "Konto erstellt! Bitte bestätige deine E-Mail-Adresse über den Link, den wir dir gerade geschickt haben."
+  };
 }
 
 function isManagedLocalEmail(email: string) {
