@@ -13,6 +13,7 @@ import { removeFestivalBandGenre } from "@/lib/actions/festival-band-genres";
 import { slotGenreAccentClass } from "@/lib/genre/normalize";
 import { getSlotStatus } from "@/lib/timeline/status";
 import { formatDateLong } from "@/lib/format/date";
+import { acceptSlotProposal, deleteSlotProposal, submitSlotProposal } from "@/lib/actions/proposals";
 
 type TimelineSlot = {
   id: string;
@@ -41,6 +42,18 @@ type TimelineDay = {
 };
 
 const CACHE_VERSION = 2;
+
+type SlotProposal = {
+  id: string;
+  bandId: string;
+  festivalDayId: string;
+  stage: string | null;
+  startsAt: string;
+  endsAt: string;
+  suggestedBy: string;
+  suggestedByName: string;
+};
+
 type SheetBandDetail = {
   id: string;
   name: string;
@@ -52,6 +65,7 @@ type SheetBandDetail = {
   endsAt?: string;
   stage?: string | null;
   status?: ReturnType<typeof getSlotStatus>;
+  festivalDayId: string;
 };
 
 function statusClasses(status: ReturnType<typeof getSlotStatus>) {
@@ -80,23 +94,34 @@ function formatUpdatedAt(value: number | null) {
 export function FestivalTimelineCachedView({
   festivalId,
   currentUserId,
+  currentUserFestivalRole = "member",
   initialDays,
+  initialProposals = [],
   favoritesStorageKey
 }: {
   festivalId: string;
   currentUserId: string;
+  currentUserFestivalRole?: "admin" | "member";
   initialDays: TimelineDay[];
+  initialProposals?: SlotProposal[];
   favoritesStorageKey: string;
 }) {
   const router = useRouter();
   const cacheKey = useMemo(() => `festival:timeline-cache:v${CACHE_VERSION}:${festivalId}`, [festivalId]);
   const [days, setDays] = useState<TimelineDay[]>(initialDays);
+  const [proposals, setProposals] = useState<SlotProposal[]>(initialProposals);
   const [usedCache, setUsedCache] = useState(false);
   const [sheetBand, setSheetBand] = useState<SheetBandDetail | null>(null);
   const [lastUpdatedAt, setLastUpdatedAt] = useState<number | null>(null);
   const [reconnectInfo, setReconnectInfo] = useState("");
   const [removingContributionId, setRemovingContributionId] = useState<string | null>(null);
   const [genreActionMessage, setGenreActionMessage] = useState("");
+
+  useEffect(() => {
+    if (initialProposals) {
+      setProposals(initialProposals);
+    }
+  }, [initialProposals]);
 
   useEffect(() => {
     if (initialDays.length) {
@@ -175,7 +200,8 @@ export function FestivalTimelineCachedView({
                           startsAt: slot.startsAt,
                           endsAt: slot.endsAt,
                           stage: slot.stage,
-                          status
+                          status,
+                          festivalDayId: day.id
                         })
                       }
                       className="font-medium text-left hover:underline"
@@ -225,9 +251,10 @@ export function FestivalTimelineCachedView({
                         id: band.id,
                         name: band.name,
                         genres: band.genres,
-                          genreContributions: band.genreContributions,
+                        genreContributions: band.genreContributions,
                         dayLabel: day.label,
-                        date: day.date
+                        date: day.date,
+                        festivalDayId: day.id
                       })
                     }
                     className="font-medium text-left hover:underline"
@@ -249,7 +276,15 @@ export function FestivalTimelineCachedView({
                     <FestivalFavoriteButton storageKey={favoritesStorageKey} bandId={band.id} />
                   </div>
                 </div>
-                <p className="text-sm text-muted">Noch keine Uhrzeit gesetzt</p>
+                <div className="mt-1 flex items-center justify-between gap-2">
+                  <p className="text-sm text-muted">Noch keine Uhrzeit gesetzt</p>
+                  {proposals.filter((p) => p.bandId === band.id).length > 0 ? (
+                    <span className="inline-flex items-center gap-1 rounded bg-indigo-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-400 border border-indigo-500/20">
+                      {proposals.filter((p) => p.bandId === band.id).length}{" "}
+                      {proposals.filter((p) => p.bandId === band.id).length === 1 ? "Vorschlag" : "Vorschläge"}
+                    </span>
+                  ) : null}
+                </div>
               </article>
             ))}
             {!day.slots.length && !day.unscheduled.length ? (
@@ -349,7 +384,211 @@ export function FestivalTimelineCachedView({
             {sheetBand.status ? (
               <p className="mt-1 text-xs uppercase tracking-wide text-muted">{statusLabel(sheetBand.status)}</p>
             ) : null}
-            {genreActionMessage ? <p className="mt-2 text-xs text-muted">{genreActionMessage}</p> : null}
+             {genreActionMessage ? <p className="mt-2 text-xs text-muted">{genreActionMessage}</p> : null}
+
+            {/* Slot Proposals Section for Unscheduled Bands */}
+            {!sheetBand.startsAt && !sheetBand.endsAt && (
+              <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
+                <h4 className="font-semibold text-sm">Zeit-Vorschläge</h4>
+                
+                {currentUserFestivalRole === "admin" ? (
+                  <div className="space-y-2">
+                    {proposals.filter((p) => p.bandId === sheetBand.id).length === 0 ? (
+                      <p className="text-xs text-muted">Noch keine Zeit-Vorschläge von Mitgliedern vorhanden.</p>
+                    ) : (
+                      proposals
+                        .filter((p) => p.bandId === sheetBand.id)
+                        .map((prop) => (
+                          <div
+                            key={prop.id}
+                            className="flex items-center justify-between gap-3 rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 p-2.5"
+                          >
+                            <div>
+                              <p className="font-medium text-xs">
+                                {format(new Date(prop.startsAt), "HH:mm")} - {format(new Date(prop.endsAt), "HH:mm")}
+                                {prop.stage ? ` | ${prop.stage}` : ""}
+                              </p>
+                              <p className="text-[10px] text-muted">von {prop.suggestedByName}</p>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <form
+                                action={async (formData) => {
+                                  const res = await acceptSlotProposal(formData);
+                                  if (res.success) {
+                                    setProposals((prev) => prev.filter((p) => p.bandId !== sheetBand.id));
+                                    setSheetBand(null);
+                                    router.refresh();
+                                  } else {
+                                    alert(res.error);
+                                  }
+                                }}
+                              >
+                                <input type="hidden" name="proposalId" value={prop.id} />
+                                <input type="hidden" name="festivalId" value={festivalId} />
+                                <button
+                                  type="submit"
+                                  className="inline-flex items-center justify-center gap-1 rounded bg-green-600 hover:bg-green-700 text-white px-2 py-1 text-[11px] font-semibold transition"
+                                >
+                                  Übernehmen
+                                </button>
+                              </form>
+                              <form
+                                action={async (formData) => {
+                                  const res = await deleteSlotProposal(formData);
+                                  if (res.success) {
+                                    setProposals((prev) => prev.filter((p) => p.id !== prop.id));
+                                    router.refresh();
+                                  } else {
+                                    alert(res.error);
+                                  }
+                                }}
+                              >
+                                <input type="hidden" name="proposalId" value={prop.id} />
+                                <input type="hidden" name="festivalId" value={festivalId} />
+                                <button
+                                  type="submit"
+                                  className="inline-flex items-center justify-center rounded border border-rose-300 dark:border-rose-900 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 dark:hover:bg-rose-950/60 text-rose-600 dark:text-rose-400 p-1 text-[11px] font-semibold transition"
+                                  title="Vorschlag ablehnen"
+                                >
+                                  Ablehnen
+                                </button>
+                              </form>
+                            </div>
+                          </div>
+                        ))
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {(() => {
+                      const myProp = proposals.find((p) => p.bandId === sheetBand.id && p.suggestedBy === currentUserId);
+                      if (myProp) {
+                        return (
+                          <div className="rounded-md border border-accent-neon/30 bg-accent-neon/5 p-3">
+                            <p className="text-[10px] font-bold text-accent-neon uppercase tracking-wider mb-1">Dein Vorschlag</p>
+                            <p className="font-semibold text-xs">
+                              {format(new Date(myProp.startsAt), "HH:mm")} - {format(new Date(myProp.endsAt), "HH:mm")} Uhr
+                              {myProp.stage ? ` | ${myProp.stage}` : ""}
+                            </p>
+                            <form
+                              className="mt-2"
+                              action={async (formData) => {
+                                const res = await deleteSlotProposal(formData);
+                                if (res.success) {
+                                  setProposals((prev) => prev.filter((p) => p.id !== myProp.id));
+                                  router.refresh();
+                                } else {
+                                  alert(res.error);
+                                }
+                              }}
+                            >
+                              <input type="hidden" name="proposalId" value={myProp.id} />
+                              <input type="hidden" name="festivalId" value={festivalId} />
+                              <button
+                                type="submit"
+                                className="rounded border border-rose-300 dark:border-rose-900 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 dark:hover:bg-rose-950/60 text-rose-600 dark:text-rose-400 px-2 py-0.5 text-[11px] font-medium transition"
+                              >
+                                Vorschlag löschen
+                              </button>
+                            </form>
+                          </div>
+                        );
+                      }
+                      
+                      const matchingDay = days.find((d) => d.id === sheetBand.festivalDayId);
+                      const existingStages = matchingDay
+                        ? Array.from(new Set(matchingDay.slots.map((s) => s.stage).filter((s): s is string => Boolean(s))))
+                        : [];
+
+                      return (
+                        <form
+                          className="space-y-3 rounded-md border border-slate-200 dark:border-slate-800 p-3 bg-slate-50/30 dark:bg-slate-900/30"
+                          action={async (formData) => {
+                            const starts = String(formData.get("startsTime") || "");
+                            const ends = String(formData.get("endsTime") || "");
+                            const stage = String(formData.get("stage") || "");
+                            
+                            if (!starts || !ends) {
+                              alert("Bitte Start- und Endzeit angeben.");
+                              return;
+                            }
+                            
+                            let endDate = sheetBand.date;
+                            if (ends <= starts) {
+                              const d = new Date(`${sheetBand.date}T00:00:00Z`);
+                              d.setUTCDate(d.getUTCDate() + 1);
+                              endDate = d.toISOString().slice(0, 10);
+                            }
+                            
+                            const startsAtCombined = `${sheetBand.date}T${starts}`;
+                            const endsAtCombined = `${endDate}T${ends}`;
+                            
+                            const submitData = new FormData();
+                            submitData.append("festivalId", festivalId);
+                            submitData.append("bandId", sheetBand.id);
+                            submitData.append("festivalDayId", sheetBand.festivalDayId);
+                            submitData.append("stage", stage);
+                            submitData.append("startsAt", startsAtCombined);
+                            submitData.append("endsAt", endsAtCombined);
+                            
+                            const res = await submitSlotProposal(submitData);
+                            if (res.success) {
+                              setSheetBand(null);
+                              router.refresh();
+                            } else {
+                              alert(res.error);
+                            }
+                          }}
+                        >
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="block text-[10px] font-medium text-muted uppercase">Start</label>
+                              <input
+                                type="time"
+                                name="startsTime"
+                                required
+                                className="mt-1 w-full rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 p-1 text-xs text-mono"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-medium text-muted uppercase">Ende</label>
+                              <input
+                                type="time"
+                                name="endsTime"
+                                required
+                                className="mt-1 w-full rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 p-1 text-xs text-mono"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-medium text-muted uppercase">Bühne (optional)</label>
+                            <input
+                              type="text"
+                              name="stage"
+                              list="stages-list"
+                              placeholder="z. B. Main Stage"
+                              className="mt-1 w-full rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 p-1 text-xs"
+                            />
+                            <datalist id="stages-list">
+                              {existingStages.map((st) => (
+                                <option key={st} value={st} />
+                              ))}
+                            </datalist>
+                          </div>
+                          <button
+                            type="submit"
+                            className="w-full rounded bg-accent-neon text-black font-semibold px-3 py-1 text-xs transition hover:opacity-90"
+                          >
+                            Vorschlag einreichen
+                          </button>
+                        </form>
+                      );
+                    })()}
+                  </div>
+                )}
+              </div>
+            )}
+
             <button
               type="button"
               onClick={() => setSheetBand(null)}

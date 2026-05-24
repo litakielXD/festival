@@ -8,10 +8,11 @@ import { createClient } from "@/lib/supabase/server";
 
 export default async function FestivalTimelinePage({ params }: { params: Promise<{ festivalId: string }> }) {
   const { festivalId } = await params;
-  const { festival, groups, currentUserId } = await getFestivalContext(festivalId);
+  const { festival, groups, members, currentUserId, currentUserFestivalRole } = await getFestivalContext(festivalId);
   const supabase = await createClient();
   const groupIds = groups.map((g) => g.id);
   const favoritesStorageKey = festivalFavoritesStorageKey(festivalId, currentUserId);
+  const memberNameMap = new Map((members ?? []).map((m) => [m.user_id, m.display_name]));
 
   let timelineDays: Array<{
     id: string;
@@ -35,7 +36,33 @@ export default async function FestivalTimelinePage({ params }: { params: Promise
     }>;
   }> = [];
 
+  let proposals: Array<{
+    id: string;
+    bandId: string;
+    festivalDayId: string;
+    stage: string | null;
+    startsAt: string;
+    endsAt: string;
+    suggestedBy: string;
+    suggestedByName: string;
+  }> = [];
+
   try {
+    const { data: proposalsData } = await supabase
+      .from("band_slot_proposals")
+      .select("id,band_id,festival_day_id,stage,starts_at,ends_at,suggested_by")
+      .eq("festival_id", festivalId);
+
+    proposals = (proposalsData ?? []).map((p) => ({
+      id: p.id,
+      bandId: p.band_id,
+      festivalDayId: p.festival_day_id,
+      stage: p.stage,
+      startsAt: p.starts_at,
+      endsAt: p.ends_at,
+      suggestedBy: p.suggested_by,
+      suggestedByName: memberNameMap.get(p.suggested_by) ?? "Unbekannt"
+    }));
     const { data: days } = groupIds.length
       ? await supabase
           .from("festival_days")
@@ -180,8 +207,10 @@ export default async function FestivalTimelinePage({ params }: { params: Promise
       <FestivalTimelineCachedView
         festivalId={festivalId}
         currentUserId={currentUserId}
+        currentUserFestivalRole={currentUserFestivalRole}
         favoritesStorageKey={favoritesStorageKey}
         initialDays={timelineDays}
+        initialProposals={proposals}
       />
     </main>
   );
