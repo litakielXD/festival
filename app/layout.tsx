@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+const appName = process.env.NEXT_PUBLIC_APP_NAME || "Festival Planner";
+
 export const metadata: Metadata = {
-  title: "Festival Planner",
+  title: appName,
   description: "Group based planning for festival days, notes and live timelines."
 };
 

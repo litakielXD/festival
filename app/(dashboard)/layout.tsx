@@ -16,6 +16,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     .eq("user_id", user.id)
     .maybeSingle();
   const isAdmin = isSystemAdminEmail(user.email);
+  const appName = process.env.NEXT_PUBLIC_APP_NAME || "Festival Planner";
 
   return (
     <div className="mx-auto min-h-screen max-w-6xl px-6 py-8 pb-24 md:pb-8">
@@ -23,7 +24,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <div className="flex items-center gap-3">
           <MainMenu isAdmin={isAdmin} />
           <Link className="text-lg font-bold" href="/dashboard">
-            Festival Planner
+            {appName}
           </Link>
         </div>
         <div className="flex items-center gap-3">
