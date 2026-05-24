@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Festival Quatsch",
+  title: "Festival Planner",
   description: "Group based planning for festival days, notes and live timelines."
 };
 

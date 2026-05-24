@@ -22,7 +22,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <div className="flex items-center gap-3">
           <MainMenu isAdmin={isAdmin} />
           <Link className="text-lg font-bold" href="/dashboard">
-            Festival Quatsch
+            Festival Planner
           </Link>
         </div>
         <div className="flex items-center gap-3">

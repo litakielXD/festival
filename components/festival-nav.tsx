@@ -20,18 +20,22 @@ export function FestivalNav({ festivalId }: FestivalNavProps) {
   return (
     <>
       <nav className="mb-6 hidden gap-3 text-sm md:flex">
-        <Link className="rounded-md border border-slate-300 px-3 py-2 hover:bg-slate-100" href={base}>
-          Mitglieder & Nachrichten
-        </Link>
-        <Link className="rounded-md border border-slate-300 px-3 py-2 hover:bg-slate-100" href={`${base}/timeline`}>
-          Timeline
-        </Link>
-        <Link className="rounded-md border border-slate-300 px-3 py-2 hover:bg-slate-100" href={`${base}/bands`}>
-          Band-Ranking
-        </Link>
-        <Link className="rounded-md border border-slate-300 px-3 py-2 hover:bg-slate-100" href={`${base}/notes`}>
-          Notizen
-        </Link>
+        {items.map((item) => {
+          const isActive = pathname === item.href;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`rounded-md border px-3 py-2 ${
+                isActive
+                  ? "border-accent bg-accent/20 font-semibold text-foreground"
+                  : "border-slate-300 hover:bg-slate-100"
+              }`}
+            >
+              {item.label === "Mitglieder" ? "Mitglieder & Nachrichten" : item.label}
+            </Link>
+          );
+        })}
       </nav>
 
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-300 bg-card/95 px-2 pb-2 pt-2 backdrop-blur md:hidden">
