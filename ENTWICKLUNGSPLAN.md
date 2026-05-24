@@ -72,9 +72,9 @@ Die App ist ein kollaborativer Festival-Planer für Gruppen. Ein System-Admin ve
 ## 2. Identifizierte Lücken & Verbesserungsbedarf
 
 ### 2.1 UX / Design
-- [ ] App-Name „Festival Quatsch" im Header ist Platzhalter → sollte konfigurierbarer App-Name werden
-- [ ] Dashboard-Karten haben keine Hover-Animation / aktiven Zustände
-- [ ] Festival-Nav (Desktop) hat keine aktiven Zustandsmarkierungen
+- [x] App-Name „Festival Quatsch" im Header ist Platzhalter → sollte konfigurierbarer App-Name werden
+- [x] Dashboard-Karten haben keine Hover-Animation / aktiven Zustände
+- [x] Festival-Nav (Desktop) hat keine aktiven Zustandsmarkierungen
 - [ ] Admin-Seite: lange, unstrukturierte Seite ohne Accordion-State-Persistenz
 - [x] Nachrichten-Bereich im Festival ist flach (keine Bubble-Chat-UI, kein Zeitstempel prominent)
 - [x] Fehlende Ladeanimationen / Skeleton-States
