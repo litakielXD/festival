@@ -7,4 +7,5 @@ coverage/
 *.log
 *.tsbuildinfo
 .env.local
+.env.production
 #lita-notes.txt

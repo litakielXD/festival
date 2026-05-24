@@ -60,9 +60,25 @@ Damit musst du SQL aus `supabase/migrations/*.sql` nicht mehr manuell kopieren.
 
 ## Git (wie [mathe](https://github.com/litakielXD/mathe))
 
-- Remote: `origin` → `https://github.com/litakielxd/festival.git`
+- Remote: `origin` → `git@github.com:litakielxd/festival.git`
 - Hauptbranch: `main` (tracking `origin/main`)
-- Workflow: lokal committen, dann `git push origin main` — kein Sonderworkflow, analog zu `../mathe`.
+- Commit-Konvention: `feat:`, `fix:`, `chore:`, `docs:`, `style:`, `refactor:`
+
+### Workflow: lokal entwickeln → deployen (ein Befehl)
+
+```bash
+./push-and-deploy.sh "feat: Beschreibung der Änderung"
+```
+
+Das Skript führt automatisch aus:
+1. `npm run lint` (Warnungen werden toleriert)
+2. `npm run typecheck` (muss sauber sein)
+3. `git add -A && git commit -m "..."`
+4. `git push origin main`
+5. SSH auf Server → `git pull --rebase` + `npm run build` + `pm2 restart festival`
+
+**Nur pushen ohne Deploy:** `SKIP_DEPLOY=yes ./push-and-deploy.sh "..."`  
+**Nur rsync (Fallback ohne git auf Server):** `./deploy-path.sh`
 
 ## Deployment
 
