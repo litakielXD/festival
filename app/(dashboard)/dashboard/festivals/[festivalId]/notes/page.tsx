@@ -182,10 +182,7 @@ export default async function FestivalNotesPage({
         </div>
       </div>
       <form
-        action={async (formData) => {
-          "use server";
-          await createFestivalNote(formData);
-        }}
+        action={createFestivalNote as unknown as (fd: FormData) => Promise<void>}
         className="space-y-3 rounded-lg border border-slate-300 bg-card p-4"
       >
         <h2 className="font-semibold">Neue Notiz</h2>
@@ -221,10 +218,7 @@ export default async function FestivalNotesPage({
                 <p className="text-xs text-muted">{meta?.dayLabel ?? "Ohne Spieltag"}</p>
                 <p className="mb-2 font-medium">{bandName}</p>
                 <form
-                  action={async (formData) => {
-                    "use server";
-                    await updateFestivalNote(formData);
-                  }}
+                  action={updateFestivalNote as unknown as (fd: FormData) => Promise<void>}
                   className="space-y-2"
                 >
                   <input type="hidden" name="festivalId" value={festivalId} />
@@ -246,10 +240,7 @@ export default async function FestivalNotesPage({
                   </div>
                 </form>
                 <form
-                  action={async (formData) => {
-                    "use server";
-                    await deleteFestivalNote(formData);
-                  }}
+                  action={deleteFestivalNote as unknown as (fd: FormData) => Promise<void>}
                   className="mt-2"
                 >
                   <input type="hidden" name="festivalId" value={festivalId} />
@@ -282,10 +273,7 @@ export default async function FestivalNotesPage({
                   <td className="border-b border-slate-200 px-3 py-2 align-top font-medium">{bandName}</td>
                   <td className="border-b border-slate-200 px-3 py-2 align-top">
                     <form
-                      action={async (formData) => {
-                        "use server";
-                        await updateFestivalNote(formData);
-                      }}
+                      action={updateFestivalNote as unknown as (fd: FormData) => Promise<void>}
                       className="space-y-2"
                     >
                       <input type="hidden" name="festivalId" value={festivalId} />
@@ -305,10 +293,7 @@ export default async function FestivalNotesPage({
                     </div>
                     </form>
                     <form
-                      action={async (formData) => {
-                        "use server";
-                        await deleteFestivalNote(formData);
-                      }}
+                      action={deleteFestivalNote as unknown as (fd: FormData) => Promise<void>}
                       className="mt-2"
                     >
                       <input type="hidden" name="festivalId" value={festivalId} />

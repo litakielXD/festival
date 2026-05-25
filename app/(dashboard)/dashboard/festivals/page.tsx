@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getUserFestivals } from "@/lib/supabase/queries";
 import { requireUser } from "@/lib/auth/guards";
 import { formatDateRange } from "@/lib/format/date";
@@ -17,7 +18,7 @@ export default async function FestivalsPage() {
           {festivals.map((festival) => (
             <article key={festival.id} className="rounded-md border border-slate-300 p-3">
               {festival.avatar_url ? (
-                <img src={festival.avatar_url} alt={festival.name} className="mb-2 h-10 w-10 rounded-full border border-slate-300 object-cover" />
+                <Image src={festival.avatar_url} alt={festival.name} width={40} height={40} className="mb-2 h-10 w-10 rounded-full border border-slate-300 object-cover" />
               ) : null}
               <Link href={`/dashboard/festivals/${festival.id}/timeline`} className="font-medium hover:underline">
                 {festival.name}

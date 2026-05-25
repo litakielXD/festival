@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getRecentMessagesForUser, getUserFestivals } from "@/lib/supabase/queries";
 import { formatDateRange } from "@/lib/format/date";
 import { LinkifiedText } from "@/components/linkified-text";
@@ -50,10 +51,12 @@ function FestivalBannerCard({
     >
       <div className="relative h-28 overflow-hidden bg-slate-200 dark:bg-slate-800">
         {festival.avatar_url ? (
-          <img
+          <Image
             src={festival.avatar_url}
             alt={festival.name}
-            className={`h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 ${past ? "grayscale opacity-70" : ""}`}
+            fill
+            sizes="(max-width: 768px) 100vw, 400px"
+            className={`object-cover transition-transform duration-300 group-hover:scale-105 ${past ? "grayscale opacity-70" : ""}`}
           />
         ) : (
           <div

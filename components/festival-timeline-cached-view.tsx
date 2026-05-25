@@ -133,6 +133,7 @@ export function FestivalTimelineCachedView({
   const [reconnectInfo, setReconnectInfo] = useState("");
   const [removingContributionId, setRemovingContributionId] = useState<string | null>(null);
   const [genreActionMessage, setGenreActionMessage] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     if (initialProposals) {
@@ -232,7 +233,28 @@ export function FestivalTimelineCachedView({
 
   return (
     <div className="space-y-4">
-      <FestivalFavoritesFilterToggle storageKey={favoritesStorageKey} />
+      <div className="flex flex-wrap items-center gap-2">
+        <FestivalFavoritesFilterToggle storageKey={favoritesStorageKey} />
+        <div className="relative flex-1 min-w-[160px] max-w-xs">
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Band suchen …"
+            className="w-full rounded-lg border border-slate-300 bg-card px-3 py-1.5 text-sm placeholder:text-muted focus:border-accent focus:outline-none dark:border-slate-700"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted hover:text-foreground"
+              aria-label="Suche zurücksetzen"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      </div>
       <p className="time-mono text-xs text-muted">Zuletzt aktualisiert: {formatUpdatedAt(lastUpdatedAt)}</p>
       {reconnectInfo ? (
         <p className="rounded-md border border-emerald-400 bg-emerald-100 px-3 py-2 text-xs text-emerald-900">
@@ -244,13 +266,18 @@ export function FestivalTimelineCachedView({
           Offline-Cache aktiv: Es wird die zuletzt gespeicherte Timeline angezeigt.
         </p>
       ) : null}
-      {days.map((day) => (
+      {days.map((day) => {
+        const q = searchQuery.toLowerCase().trim();
+        const visibleSlots = q ? day.slots.filter((s) => s.bandName.toLowerCase().includes(q)) : day.slots;
+        const visibleUnscheduled = q ? day.unscheduled.filter((b) => b.name.toLowerCase().includes(q)) : day.unscheduled;
+        if (q && visibleSlots.length === 0 && visibleUnscheduled.length === 0) return null;
+        return (
         <section key={day.id} className="festival-card p-4">
           <h2 className="mb-3 text-lg font-semibold">
             {day.label} ({formatDateLong(day.date)})
           </h2>
           <div className="space-y-2">
-            {day.slots.map((slot) => {
+            {visibleSlots.map((slot) => {
               const status = getSlotStatus(slot.startsAt, slot.endsAt);
               return (
                 <article
@@ -321,7 +348,7 @@ export function FestivalTimelineCachedView({
                 </article>
               );
             })}
-            {day.unscheduled.map((band) => (
+            {visibleUnscheduled.map((band) => (
               <article
                 key={band.id}
                 data-favorites-filterable="true"
@@ -372,12 +399,13 @@ export function FestivalTimelineCachedView({
                 </div>
               </article>
             ))}
-            {!day.slots.length && !day.unscheduled.length ? (
+            {!visibleSlots.length && !visibleUnscheduled.length ? (
               <p className="text-sm text-muted">Keine Slots oder Bands für diesen Tag.</p>
             ) : null}
           </div>
         </section>
-      ))}
+        );
+      })}
       {!days.length ? <p className="text-sm text-muted">Noch keine Festivaltage vorhanden.</p> : null}
 
       {sheetBand ? (

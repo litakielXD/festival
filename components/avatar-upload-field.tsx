@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 
 interface AvatarUploadFieldProps {
@@ -95,7 +96,7 @@ export function AvatarUploadField({
     <div className="space-y-2">
       <p className="text-sm font-medium">{label}</p>
       {avatarUrl ? (
-        <img src={avatarUrl} alt="Profilbild Vorschau" className="h-20 w-20 rounded-full border border-slate-300 object-cover" />
+        <Image src={avatarUrl} alt="Profilbild Vorschau" width={80} height={80} className="h-20 w-20 rounded-full border border-slate-300 object-cover" />
       ) : (
         <div className="flex h-20 w-20 items-center justify-center rounded-full border border-slate-300 text-xs text-muted">Kein Bild</div>
       )}

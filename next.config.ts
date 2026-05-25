@@ -2,8 +2,16 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  // Self-hosted rsync-Deploy (siehe deploy-path.sh): ein Node-Prozess auf dem Server.
-  output: "standalone"
+  output: "standalone",
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
+        pathname: "/storage/v1/object/public/**"
+      }
+    ]
+  }
 };
 
 export default nextConfig;
