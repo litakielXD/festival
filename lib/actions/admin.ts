@@ -85,20 +85,6 @@ export async function adminUpdatePersonPassword(formData: FormData) {
   return { success: true };
 }
 
-export async function adminDeleteGroup(formData: FormData) {
-  await requireSystemAdmin();
-  const admin = getAdminClient();
-  const groupId = String(formData.get("groupId") || "").trim();
-  if (!groupId) return { error: "Gruppen-ID fehlt." };
-
-  const { error } = await admin.from("groups").delete().eq("id", groupId);
-  if (error) return { error: error.message };
-
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard/admin");
-  return { success: true };
-}
-
 export async function adminDeleteFestival(formData: FormData) {
   await requireSystemAdmin();
   const admin = getAdminClient();

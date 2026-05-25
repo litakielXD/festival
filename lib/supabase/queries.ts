@@ -43,85 +43,6 @@ async function resolveUserNames(
   return nameById;
 }
 
-export async function getUserGroups() {
-  const user = await requireUser();
-  const supabase = await createClient();
-
-  const { data: membershipData, error: membershipError } = await supabase
-    .from("group_members")
-    .select("role, groups(id,name,avatar_url,created_by)")
-    .eq("user_id", user.id);
-
-  if (membershipError) {
-    throw new Error(membershipError.message);
-  }
-
-  // Fallback for freshly created groups: show groups owned by the user
-  // even if membership insertion did not complete yet.
-  const { data: ownedGroups, error: ownedGroupsError } = await supabase
-    .from("groups")
-    .select("id,name,avatar_url,created_by")
-    .eq("created_by", user.id);
-
-  if (ownedGroupsError) {
-    throw new Error(ownedGroupsError.message);
-  }
-
-  const membershipEntries =
-    membershipData?.map((row) => ({
-      role: row.role as "admin" | "member",
-      group: Array.isArray(row.groups) ? row.groups[0] : row.groups
-    })) ?? [];
-
-  const membershipGroupIds = new Set(
-    membershipEntries.map((entry) => entry.group?.id).filter(Boolean) as string[]
-  );
-
-  const ownerFallbackEntries =
-    ownedGroups
-      ?.filter((group) => !membershipGroupIds.has(group.id))
-      .map((group) => ({
-        role: "admin" as const,
-        group
-      })) ?? [];
-
-  return [...membershipEntries, ...ownerFallbackEntries].filter((entry) => Boolean(entry.group));
-}
-
-export async function getGroupContext(groupId: string) {
-  const user = await requireUser();
-  const supabase = await createClient();
-
-  const { data: membership } = await supabase
-    .from("group_members")
-    .select("role")
-    .eq("group_id", groupId)
-    .eq("user_id", user.id)
-    .single();
-
-  if (!membership) {
-    throw new Error("No access to this group.");
-  }
-
-  const { data: group } = await supabase.from("groups").select("id,name,avatar_url").eq("id", groupId).single();
-  const { data: days } = await supabase
-    .from("festival_days")
-    .select("id,date,label")
-    .eq("group_id", groupId)
-    .order("date", { ascending: true });
-  const { data: bands } = await supabase
-    .from("bands")
-    .select("id,name,genre,created_by")
-    .eq("group_id", groupId)
-    .order("name", { ascending: true });
-
-  return {
-    role: membership.role as "admin" | "member",
-    group,
-    days: days ?? [],
-    bands: bands ?? []
-  };
-}
 
 export async function getUserFestivals() {
   await requireUser();
@@ -205,54 +126,6 @@ export async function getUserFestivals() {
   return festivalList;
 }
 
-export async function getGroupPeopleAndMessages(groupId: string) {
-  const user = await requireUser();
-  const supabase = await createClient();
-
-  const { data: membership } = await supabase
-    .from("group_members")
-    .select("role")
-    .eq("group_id", groupId)
-    .eq("user_id", user.id)
-    .single();
-
-  if (!membership) {
-    throw new Error("No access to this group.");
-  }
-
-  const { data: group } = await supabase.from("groups").select("id,name,avatar_url").eq("id", groupId).single();
-
-  const { data: members, error: membersError } = await supabase
-    .from("group_members")
-    .select("user_id,role")
-    .eq("group_id", groupId)
-    .order("created_at", { ascending: true });
-  if (membersError) throw new Error(membersError.message);
-
-  const userIds = (members ?? []).map((m) => m.user_id);
-  const nameByUserId = await resolveUserNames(supabase, userIds);
-
-  const { data: messages, error: messagesError } = await supabase
-    .from("group_direct_messages")
-    .select("id,sender_id,recipient_id,content,created_at")
-    .eq("group_id", groupId)
-    .order("created_at", { ascending: false })
-    .limit(40);
-  if (messagesError) throw new Error(messagesError.message);
-
-  return {
-    currentUserId: user.id,
-    role: membership.role as "admin" | "member",
-    group,
-    members:
-      members?.map((m) => ({
-        user_id: m.user_id,
-        role: m.role as "admin" | "member",
-        display_name: m.user_id === user.id ? "Ich" : fallbackUserLabel(nameByUserId.get(m.user_id))
-      })) ?? [],
-    messages: messages ?? []
-  };
-}
 
 export async function getRecentMessagesForUser(limit = 8) {
   const user = await requireUser();
@@ -378,23 +251,9 @@ export async function getProfileOverview() {
     .eq("user_id", user.id)
     .maybeSingle();
 
-  const { data: invites } = await supabase
-    .from("group_invites")
-    .select("id,group_id,invited_email,status,created_at,groups(name)")
-    .eq("status", "pending")
-    .ilike("invited_email", user.email ?? "")
-    .order("created_at", { ascending: false });
-
   return {
     user,
-    profile: profile ?? { display_name: null, avatar_url: null },
-    invites:
-      invites?.map((invite) => ({
-        id: invite.id,
-        group_id: invite.group_id,
-        group_name: (Array.isArray(invite.groups) ? invite.groups[0] : invite.groups)?.name ?? "Gruppe",
-        created_at: invite.created_at
-      })) ?? []
+    profile: profile ?? { display_name: null, avatar_url: null }
   };
 }
 
@@ -406,8 +265,7 @@ export async function getAdminOverview() {
 
   const supabase = await createClient();
 
-  const [{ data: groups }, { data: festivals }, { data: profiles }, { data: festivalMembers }] = await Promise.all([
-    supabase.from("groups").select("id,name,avatar_url,created_at").order("created_at", { ascending: false }),
+  const [{ data: festivals }, { data: profiles }, { data: festivalMembers }] = await Promise.all([
     supabase.from("festivals").select("id,name,avatar_url,starts_on,ends_on,location,created_at").order("created_at", { ascending: false }),
     supabase.from("profiles").select("user_id,display_name,avatar_url").order("user_id", { ascending: true }),
     supabase.from("festival_members").select("festival_id,user_id,role").order("created_at", { ascending: true })
@@ -453,7 +311,6 @@ export async function getAdminOverview() {
     })) ?? [];
 
   return {
-    groups: groups ?? [],
     festivals: festivalsWithMembers,
     people: profiles ?? []
   };
