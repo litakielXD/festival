@@ -231,3 +231,38 @@ export async function deleteFestivalMessage(formData: FormData) {
   revalidatePath(`/dashboard/festivals/${festivalId}`);
   return { success: true };
 }
+
+export async function sendFestivalGroupMessage(formData: FormData) {
+  const user = await requireUser();
+  const supabase = await createClient();
+  const festivalId = String(formData.get("festivalId") || "").trim();
+  const content = String(formData.get("content") || "").trim();
+  if (!festivalId || !content) return { error: "Inhalt ist erforderlich." };
+
+  const { error } = await supabase.from("festival_group_messages").insert({
+    festival_id: festivalId,
+    sender_id: user.id,
+    content
+  });
+  if (error) return { error: error.message };
+
+  revalidatePath(`/dashboard/festivals/${festivalId}`);
+  return { success: true };
+}
+
+export async function deleteFestivalGroupMessage(formData: FormData) {
+  await requireUser();
+  const supabase = await createClient();
+  const festivalId = String(formData.get("festivalId") || "").trim();
+  const messageId = String(formData.get("messageId") || "").trim();
+  if (!festivalId || !messageId) return { error: "Nachricht nicht gefunden." };
+
+  const { error } = await supabase
+    .from("festival_group_messages")
+    .delete()
+    .eq("id", messageId);
+  if (error) return { error: error.message };
+
+  revalidatePath(`/dashboard/festivals/${festivalId}`);
+  return { success: true };
+}

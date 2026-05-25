@@ -2,7 +2,12 @@
 
 import { useEffect, useRef, useState, useTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { sendFestivalMessage, deleteFestivalMessage } from "@/lib/actions/festival";
+import {
+  sendFestivalMessage,
+  deleteFestivalMessage,
+  sendFestivalGroupMessage,
+  deleteFestivalGroupMessage
+} from "@/lib/actions/festival";
 import { toast } from "@/components/ui/toast";
 
 type MemberItem = {
@@ -14,16 +19,18 @@ type MemberItem = {
 type MessageItem = {
   id: string;
   sender_id: string;
-  recipient_id: string;
+  recipient_id?: string;
   content: string;
   created_at: string;
+  sender_name?: string;
 };
 
 interface FestivalChatInterfaceProps {
   festivalId: string;
   currentUserId: string;
   members: MemberItem[];
-  initialMessages: MessageItem[];
+  initialDirectMessages: MessageItem[];
+  initialGroupMessages: MessageItem[];
 }
 
 // Generate consistent HSL color based on string hash
@@ -33,7 +40,6 @@ function getAvatarColor(name: string) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
   }
   const h = Math.abs(hash) % 360;
-  // Use vibrant HSL colors
   return `hsl(${h}, 65%, 45%)`;
 }
 
@@ -77,7 +83,8 @@ export function FestivalChatInterface({
   festivalId,
   currentUserId,
   members,
-  initialMessages
+  initialDirectMessages,
+  initialGroupMessages
 }: FestivalChatInterfaceProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -86,35 +93,39 @@ export function FestivalChatInterface({
   // Exclude current user from the chat-partners list
   const otherMembers = members.filter((m) => m.user_id !== currentUserId);
   
-  // Select first member as active chat partner on mount
-  const [activePartnerId, setActivePartnerId] = useState<string | null>(
-    otherMembers[0]?.user_id ?? null
-  );
+  // Select "group" as active chat room on mount
+  const [activeChatId, setActiveChatId] = useState<string>("group");
 
   const [inputContent, setInputContent] = useState("");
-  const [optimisticMessages, setOptimisticMessages] = useState<MessageItem[]>([]);
+  const [optimisticDMs, setOptimisticDMs] = useState<MessageItem[]>([]);
+  const [optimisticGroupMsgs, setOptimisticGroupMsgs] = useState<MessageItem[]>([]);
 
-  const activePartner = members.find((m) => m.user_id === activePartnerId);
+  const activePartner = members.find((m) => m.user_id === activeChatId);
 
   // Sync and filter chat messages for selected conversation
   const chatMessages = useMemo(() => {
-    const all = [...initialMessages, ...optimisticMessages];
-    
-    // De-duplicate messages that were saved and revalidated
-    const uniqueMap = new Map<string, MessageItem>();
-    all.forEach((msg: MessageItem) => {
-      uniqueMap.set(msg.id, msg);
-    });
-    const sorted = Array.from(uniqueMap.values()).sort(
-      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-    );
+    if (activeChatId === "group") {
+      const all = [...initialGroupMessages, ...optimisticGroupMsgs];
+      const uniqueMap = new Map<string, MessageItem>();
+      all.forEach((msg) => uniqueMap.set(msg.id, msg));
+      return Array.from(uniqueMap.values()).sort(
+        (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      );
+    } else {
+      const all = [...initialDirectMessages, ...optimisticDMs];
+      const uniqueMap = new Map<string, MessageItem>();
+      all.forEach((msg) => uniqueMap.set(msg.id, msg));
+      const sorted = Array.from(uniqueMap.values()).sort(
+        (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      );
 
-    return sorted.filter(
-      (msg) =>
-        (msg.sender_id === currentUserId && msg.recipient_id === activePartnerId) ||
-        (msg.sender_id === activePartnerId && msg.recipient_id === currentUserId)
-    );
-  }, [initialMessages, optimisticMessages, currentUserId, activePartnerId]);
+      return sorted.filter(
+        (msg) =>
+          (msg.sender_id === currentUserId && msg.recipient_id === activeChatId) ||
+          (msg.sender_id === activeChatId && msg.recipient_id === currentUserId)
+      );
+    }
+  }, [initialDirectMessages, initialGroupMessages, optimisticDMs, optimisticGroupMsgs, currentUserId, activeChatId]);
 
   // Scroll to bottom helper
   const scrollToBottom = () => {
@@ -123,72 +134,117 @@ export function FestivalChatInterface({
 
   useEffect(() => {
     scrollToBottom();
-  }, [chatMessages, activePartnerId]);
+  }, [chatMessages, activeChatId]);
 
-  // Clear optimistic messages that are now part of initialMessages
+  // Clear optimistic messages that are now saved on the server
   useEffect(() => {
-    const savedIds = new Set(initialMessages.map((m) => m.id));
-    setOptimisticMessages((prev) => prev.filter((m) => !savedIds.has(m.id)));
-  }, [initialMessages]);
+    const savedIds = new Set(initialDirectMessages.map((m) => m.id));
+    setOptimisticDMs((prev) => prev.filter((m) => !savedIds.has(m.id)));
+  }, [initialDirectMessages]);
+
+  useEffect(() => {
+    const savedIds = new Set(initialGroupMessages.map((m) => m.id));
+    setOptimisticGroupMsgs((prev) => prev.filter((m) => !savedIds.has(m.id)));
+  }, [initialGroupMessages]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     const content = inputContent.trim();
-    if (!content || !activePartnerId) return;
+    if (!content || !activeChatId) return;
 
     setInputContent("");
-
-    // Create optimistic message
     const tempId = `optimistic-${Date.now()}`;
-    const newMsg: MessageItem = {
-      id: tempId,
-      sender_id: currentUserId,
-      recipient_id: activePartnerId,
-      content,
-      created_at: new Date().toISOString()
-    };
 
-    setOptimisticMessages((prev) => [...prev, newMsg]);
+    if (activeChatId === "group") {
+      const myProfile = members.find((m) => m.user_id === currentUserId);
+      const newMsg: MessageItem = {
+        id: tempId,
+        sender_id: currentUserId,
+        content,
+        created_at: new Date().toISOString(),
+        sender_name: myProfile?.display_name ?? "Ich"
+      };
 
-    const formData = new FormData();
-    formData.append("festivalId", festivalId);
-    formData.append("recipientId", activePartnerId);
-    formData.append("content", content);
+      setOptimisticGroupMsgs((prev) => [...prev, newMsg]);
 
-    startTransition(async () => {
-      const res = await sendFestivalMessage(formData);
-      if (res && "error" in res) {
-        // Remove optimistic message on error and restore input
-        setOptimisticMessages((prev) => prev.filter((m) => m.id !== tempId));
-        setInputContent(content);
-        toast.error(res.error || "Fehler beim Senden der Nachricht.");
-      } else {
-        router.refresh();
-      }
-    });
+      const formData = new FormData();
+      formData.append("festivalId", festivalId);
+      formData.append("content", content);
+
+      startTransition(async () => {
+        const res = await sendFestivalGroupMessage(formData);
+        if (res && "error" in res) {
+          setOptimisticGroupMsgs((prev) => prev.filter((m) => m.id !== tempId));
+          setInputContent(content);
+          toast.error(res.error || "Fehler beim Senden der Gruppen-Nachricht.");
+        } else {
+          router.refresh();
+        }
+      });
+    } else {
+      const newMsg: MessageItem = {
+        id: tempId,
+        sender_id: currentUserId,
+        recipient_id: activeChatId,
+        content,
+        created_at: new Date().toISOString()
+      };
+
+      setOptimisticDMs((prev) => [...prev, newMsg]);
+
+      const formData = new FormData();
+      formData.append("festivalId", festivalId);
+      formData.append("recipientId", activeChatId);
+      formData.append("content", content);
+
+      startTransition(async () => {
+        const res = await sendFestivalMessage(formData);
+        if (res && "error" in res) {
+          setOptimisticDMs((prev) => prev.filter((m) => m.id !== tempId));
+          setInputContent(content);
+          toast.error(res.error || "Fehler beim Senden der privaten Nachricht.");
+        } else {
+          router.refresh();
+        }
+      });
+    }
   };
 
   const handleDeleteMessage = async (messageId: string) => {
-    // Optimistically remove from view
-    setOptimisticMessages((prev) => prev.filter((m) => m.id !== messageId));
-    
     const formData = new FormData();
     formData.append("festivalId", festivalId);
     formData.append("messageId", messageId);
 
-    startTransition(async () => {
-      const res = await deleteFestivalMessage(formData);
-      if (res && "error" in res) {
-        toast.error(res.error || "Fehler beim Löschen der Nachricht.");
-        router.refresh();
-      } else {
-        toast.success("Nachricht erfolgreich gelöscht.");
-        router.refresh();
-      }
-    });
+    if (activeChatId === "group") {
+      setOptimisticGroupMsgs((prev) => prev.filter((m) => m.id !== messageId));
+
+      startTransition(async () => {
+        const res = await deleteFestivalGroupMessage(formData);
+        if (res && "error" in res) {
+          toast.error(res.error || "Fehler beim Löschen der Nachricht.");
+          router.refresh();
+        } else {
+          toast.success("Nachricht erfolgreich gelöscht.");
+          router.refresh();
+        }
+      });
+    } else {
+      setOptimisticDMs((prev) => prev.filter((m) => m.id !== messageId));
+
+      startTransition(async () => {
+        const res = await deleteFestivalMessage(formData);
+        if (res && "error" in res) {
+          toast.error(res.error || "Fehler beim Löschen der Nachricht.");
+          router.refresh();
+        } else {
+          toast.success("Nachricht erfolgreich gelöscht.");
+          router.refresh();
+        }
+      });
+    }
   };
 
-  // Group messages by date to render premium headers (e.g., "Heute", "24. Mai")
+  // Group messages by date to render premium headers (e.g., "Heute", "Gestern", "24. Mai")
   const groupedMessages = useMemo(() => {
     const groups: Array<{ dateLabel: string; items: MessageItem[] }> = [];
     let currentGroup: { dateLabel: string; items: MessageItem[] } | null = null;
@@ -208,20 +264,42 @@ export function FestivalChatInterface({
   return (
     <section className="grid gap-6 md:grid-cols-3 h-[600px] rounded-2xl border border-slate-200/80 bg-white overflow-hidden shadow-md dark:border-slate-800 dark:bg-slate-950">
       
-      {/* 1. Left Sidebar: Festival Members List */}
+      {/* 1. Left Sidebar: Festival Channels & Members */}
       <div className="md:col-span-1 border-r border-slate-200 dark:border-slate-800 flex flex-col h-full bg-slate-50/30 dark:bg-slate-950/20">
         <div className="p-4 border-b border-slate-200 dark:border-slate-800">
           <h3 className="font-semibold text-slate-800 dark:text-slate-200">Festivalmitglieder</h3>
-          <p className="text-xs text-muted">Klicke auf eine Person, um privat zu chatten</p>
+          <p className="text-xs text-muted">Chatte in der Gruppe oder privat</p>
         </div>
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
+          {/* A. Shared Group Chatroom Button */}
+          <button
+            type="button"
+            onClick={() => setActiveChatId("group")}
+            className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${
+              activeChatId === "group"
+                ? "bg-indigo-50 text-indigo-900 shadow-sm dark:bg-indigo-950/40 dark:text-indigo-200"
+                : "hover:bg-slate-100/80 text-slate-700 dark:text-slate-300 dark:hover:bg-slate-900/50"
+            }`}
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-full text-lg font-bold text-white shadow-sm shrink-0 bg-gradient-to-tr from-indigo-500 to-cyan-500">
+              📢
+            </div>
+            <div className="text-left overflow-hidden">
+              <p className="font-semibold text-sm truncate">Festival-Gruppe</p>
+              <p className="text-xs text-indigo-500 font-semibold truncate dark:text-indigo-400">Gemeinsamer Chat</p>
+            </div>
+          </button>
+
+          <div className="my-2 border-t border-slate-200 dark:border-slate-800/80" />
+
+          {/* B. Private Member DM Buttons */}
           {otherMembers.map((member) => {
-            const isActive = activePartnerId === member.user_id;
+            const isActive = activeChatId === member.user_id;
             return (
               <button
                 key={member.user_id}
                 type="button"
-                onClick={() => setActivePartnerId(member.user_id)}
+                onClick={() => setActiveChatId(member.user_id)}
                 className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${
                   isActive
                     ? "bg-indigo-50 text-indigo-900 shadow-sm dark:bg-indigo-950/40 dark:text-indigo-200"
@@ -247,24 +325,40 @@ export function FestivalChatInterface({
         </div>
       </div>
 
-      {/* 2. Right Main Panel: Direct Messages Chat */}
+      {/* 2. Right Main Panel: Active Conversation View */}
       <div className="md:col-span-2 flex flex-col h-full bg-white dark:bg-slate-950">
-        {activePartner ? (
+        {activeChatId === "group" || activePartner ? (
           <>
             {/* Active Conversation Header */}
             <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center gap-3 shrink-0">
-              <div
-                className="flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold text-white shadow-sm shrink-0"
-                style={{ backgroundColor: getAvatarColor(activePartner.display_name) }}
-              >
-                {getInitials(activePartner.display_name)}
-              </div>
-              <div>
-                <h4 className="font-semibold text-sm text-slate-800 dark:text-slate-200">
-                  {activePartner.display_name}
-                </h4>
-                <p className="text-xs text-muted-foreground capitalize">{activePartner.role}</p>
-              </div>
+              {activeChatId === "group" ? (
+                <>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full text-lg font-bold text-white shadow-sm shrink-0 bg-gradient-to-tr from-indigo-500 to-cyan-500">
+                    📢
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm text-slate-800 dark:text-slate-200">
+                      Festival-Gruppe
+                    </h4>
+                    <p className="text-xs text-muted-foreground">Offener Channel für alle Festivalmitglieder</p>
+                  </div>
+                </>
+              ) : activePartner ? (
+                <>
+                  <div
+                    className="flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold text-white shadow-sm shrink-0"
+                    style={{ backgroundColor: getAvatarColor(activePartner.display_name) }}
+                  >
+                    {getInitials(activePartner.display_name)}
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm text-slate-800 dark:text-slate-200">
+                      {activePartner.display_name}
+                    </h4>
+                    <p className="text-xs text-muted-foreground capitalize">{activePartner.role}</p>
+                  </div>
+                </>
+              ) : null}
             </div>
 
             {/* Chat Messages List (Scrolling) */}
@@ -281,6 +375,8 @@ export function FestivalChatInterface({
                   {/* Messages bubbles */}
                   {group.items.map((msg: MessageItem) => {
                     const isSelf = msg.sender_id === currentUserId;
+                    const senderName = msg.sender_name || (activePartner ? activePartner.display_name : "Mitglied");
+                    
                     return (
                       <div
                         key={msg.id}
@@ -289,12 +385,17 @@ export function FestivalChatInterface({
                         {!isSelf && (
                           <div
                             className="flex h-7 w-7 items-center justify-center rounded-full text-[9px] font-bold text-white shrink-0 mb-1"
-                            style={{ backgroundColor: getAvatarColor(activePartner.display_name) }}
+                            style={{ backgroundColor: getAvatarColor(senderName) }}
                           >
-                            {getInitials(activePartner.display_name)}
+                            {getInitials(senderName)}
                           </div>
                         )}
-                        <div className="max-w-[70%] space-y-1">
+                        <div className="max-w-[70%] space-y-0.5">
+                          {activeChatId === "group" && !isSelf && (
+                            <span className="block text-[10px] font-bold text-slate-500 pl-1 dark:text-slate-400">
+                              {senderName}
+                            </span>
+                          )}
                           <div
                             className={`px-4 py-2.5 text-sm rounded-2xl relative shadow-sm break-words transition-all duration-200 ${
                               isSelf
@@ -337,7 +438,11 @@ export function FestivalChatInterface({
                     💬
                   </div>
                   <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Keine Nachrichten vorhanden</p>
-                  <p className="text-xs text-muted">Schreibe eine private Nachricht, um die Unterhaltung zu beginnen.</p>
+                  <p className="text-xs text-muted">
+                    {activeChatId === "group" 
+                      ? "Schreibe die erste Nachricht in der Festival-Gruppe!"
+                      : `Schreibe eine private Nachricht an ${activePartner?.display_name ?? "dieses Mitglied"}.`}
+                  </p>
                 </div>
               )}
 
@@ -351,7 +456,11 @@ export function FestivalChatInterface({
             >
               <input
                 type="text"
-                placeholder={`Nachricht an ${activePartner.display_name} schreiben...`}
+                placeholder={
+                  activeChatId === "group"
+                    ? "Nachricht an Festival-Gruppe schreiben..."
+                    : `Nachricht an ${activePartner?.display_name ?? "Mitglied"} schreiben...`
+                }
                 value={inputContent}
                 onChange={(e) => setInputContent(e.target.value)}
                 disabled={isPending}
