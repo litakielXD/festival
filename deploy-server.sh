@@ -38,6 +38,11 @@ npm ci
 
 echo "[4/5] npm run build"
 npm run build
+echo "    Kopiere statische Assets für Standalone-Auslieferung..."
+mkdir -p .next/standalone/.next
+cp -rf .next/static .next/standalone/.next/
+cp -rf public .next/standalone/
+
 
 echo "[5/5] PM2 Service: $SERVICE_NAME"
 if pm2 describe "$SERVICE_NAME" >/dev/null 2>&1; then
