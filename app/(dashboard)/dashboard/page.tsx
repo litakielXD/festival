@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getRecentMessagesForUser, getUserFestivals } from "@/lib/supabase/queries";
 import { formatDateRange } from "@/lib/format/date";
+import { LinkifiedText } from "@/components/linkified-text";
 
 function getInitials(name: string) {
   return name.slice(0, 2).toUpperCase();
@@ -176,7 +177,7 @@ export default async function DashboardPage() {
                   <p className="text-[11px] text-muted font-medium leading-tight">
                     {message.sender_name} → {message.recipient_name}
                   </p>
-                  <p className="mt-1 text-sm line-clamp-2">{message.content}</p>
+                  <p className="mt-1 text-sm line-clamp-2"><LinkifiedText text={message.content} /></p>
                 </Link>
               ))}
               {!latestMessages.length && (
