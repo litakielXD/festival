@@ -41,3 +41,20 @@ export async function upsertProfile(formData: FormData) {
   revalidatePath("/dashboard/profile");
   return { success: true };
 }
+
+export async function updateProfilePassword(formData: FormData) {
+  await requireUser();
+  const supabase = await createClient();
+
+  const password = String(formData.get("password") || "").trim();
+  if (!password || password.length < 8) {
+    return { error: "Das Passwort muss mindestens 8 Zeichen lang sein." };
+  }
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { success: true };
+}

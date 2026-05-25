@@ -41,7 +41,9 @@ npm run build
 echo "    Kopiere statische Assets für Standalone-Auslieferung..."
 mkdir -p .next/standalone/.next
 cp -rf .next/static .next/standalone/.next/
-cp -rf public .next/standalone/
+if [[ -d public ]]; then
+  cp -rf public .next/standalone/
+fi
 
 
 echo "[5/5] PM2 Service: $SERVICE_NAME"
