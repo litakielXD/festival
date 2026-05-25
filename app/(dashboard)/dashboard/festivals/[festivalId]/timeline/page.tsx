@@ -195,6 +195,28 @@ export default async function FestivalTimelinePage({ params }: { params: Promise
         }))
       }))
     }));
+
+    const undayedBands = (bandsWithDay ?? [])
+      .filter((b) => !b.festival_day_id && !scheduledBandIds.has(b.id))
+      .sort((a, b) => a.name.localeCompare(b.name, "de-DE"));
+    if (undayedBands.length > 0) {
+      timelineDays.push({
+        id: "unassigned",
+        label: "Ohne Spieltag",
+        date: "9999-12-31",
+        slots: [],
+        unscheduled: undayedBands.map((band) => ({
+          id: band.id,
+          name: band.name,
+          genres: genresByBandId.get(band.id) ?? [],
+          genreContributions: (contribByBand.get(band.id) ?? []).map((row) => ({
+            id: row.id,
+            genre: row.genre,
+            createdBy: row.created_by
+          }))
+        }))
+      });
+    }
   } catch {
     // Keep timelineDays empty and let client use cached payload if available.
   }

@@ -274,7 +274,7 @@ export function FestivalTimelineCachedView({
         return (
         <section key={day.id} className="festival-card p-4">
           <h2 className="mb-3 text-lg font-semibold">
-            {day.label} ({formatDateLong(day.date)})
+            {day.label}{day.date !== "9999-12-31" ? ` (${formatDateLong(day.date)})` : ""}
           </h2>
           <div className="space-y-2">
             {visibleSlots.map((slot) => {
