@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useTransition } from "react";
+import Image from "next/image";
 import { toast } from "@/components/ui/toast";
 import { AvatarUploadField } from "@/components/avatar-upload-field";
 import { FestivalMemberAssignmentForm } from "@/components/festival-member-assignment-form";
@@ -293,9 +294,11 @@ export function AdminFestivalsList({
                 >
                   <div className="flex items-center gap-3">
                     {festival.avatar_url ? (
-                      <img
+                      <Image
                         src={festival.avatar_url}
                         alt={festival.name}
+                        width={40}
+                        height={40}
                         className="h-10 w-10 rounded-full object-cover shadow-sm ring-2 ring-slate-100 dark:ring-slate-800"
                       />
                     ) : (

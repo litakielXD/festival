@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { signOut } from "@/lib/actions/auth";
 import { createClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/auth/guards";
@@ -38,9 +39,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <ThemeToggle />
           <Link href="/dashboard/profile" className="block" aria-label="Zum Profil">
             {profile?.avatar_url ? (
-              <img
+              <Image
                 src={profile.avatar_url}
                 alt="Profilbild"
+                width={36}
+                height={36}
                 className="h-9 w-9 rounded-full border border-slate-300 object-cover dark:border-slate-700"
               />
             ) : (

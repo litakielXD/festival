@@ -3,6 +3,7 @@ import { getProfileOverview } from "@/lib/supabase/queries";
 import { ProfileSettingsForm } from "@/components/profile-settings-form";
 import { formatDateLong } from "@/lib/format/date";
 import Link from "next/link";
+import Image from "next/image";
 
 export default async function ProfilePage() {
   const { user, profile } = await getProfileOverview();
@@ -94,9 +95,11 @@ export default async function ProfilePage() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   {festival.avatar_url ? (
-                    <img
+                    <Image
                       src={festival.avatar_url}
                       alt={festival.name}
+                      width={44}
+                      height={44}
                       className="h-11 w-11 rounded-full object-cover shadow-sm ring-2 ring-slate-100 dark:ring-slate-800"
                     />
                   ) : (
