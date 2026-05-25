@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import {
   sendFestivalMessage,
   deleteFestivalMessage,
@@ -97,22 +98,124 @@ export function FestivalChatInterface({
   const [activeChatId, setActiveChatId] = useState<string>("group");
 
   const [inputContent, setInputContent] = useState("");
+  
+  // Optimistic messages
   const [optimisticDMs, setOptimisticDMs] = useState<MessageItem[]>([]);
   const [optimisticGroupMsgs, setOptimisticGroupMsgs] = useState<MessageItem[]>([]);
 
+  // Realtime received messages
+  const [realtimeDMs, setRealtimeDMs] = useState<MessageItem[]>([]);
+  const [realtimeGroupMsgs, setRealtimeGroupMsgs] = useState<MessageItem[]>([]);
+
   const activePartner = members.find((m) => m.user_id === activeChatId);
+
+  // Realtime WebSocket Subscription
+  useEffect(() => {
+    const supabase = createClient();
+
+    // 1. Shared Group Messages WebSocket Channel
+    const groupChannel = supabase
+      .channel(`festival-group-messages-${festivalId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "festival_group_messages",
+          filter: `festival_id=eq.${festivalId}`
+        },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            const newMsg = payload.new as MessageItem;
+            const sender = members.find((m) => m.user_id === newMsg.sender_id);
+            const enrichedMsg: MessageItem = {
+              id: newMsg.id,
+              sender_id: newMsg.sender_id,
+              content: newMsg.content,
+              created_at: newMsg.created_at,
+              sender_name: sender ? sender.display_name : "Mitglied"
+            };
+
+            setRealtimeGroupMsgs((prev) => {
+              if (prev.some((m) => m.id === enrichedMsg.id)) return prev;
+              return [...prev, enrichedMsg];
+            });
+
+            if (newMsg.sender_id !== currentUserId) {
+              router.refresh();
+            }
+          } else if (payload.eventType === "DELETE") {
+            const deletedId = payload.old.id;
+            setRealtimeGroupMsgs((prev) => prev.filter((m) => m.id !== deletedId));
+            setOptimisticGroupMsgs((prev) => prev.filter((m) => m.id !== deletedId));
+            router.refresh();
+          }
+        }
+      )
+      .subscribe();
+
+    // 2. Direct Messages WebSocket Channel
+    const dmChannel = supabase
+      .channel(`festival-dm-messages-${festivalId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "festival_direct_messages",
+          filter: `festival_id=eq.${festivalId}`
+        },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            const newMsg = payload.new as MessageItem;
+            const enrichedMsg: MessageItem = {
+              id: newMsg.id,
+              sender_id: newMsg.sender_id,
+              recipient_id: newMsg.recipient_id,
+              content: newMsg.content,
+              created_at: newMsg.created_at
+            };
+
+            setRealtimeDMs((prev) => {
+              if (prev.some((m) => m.id === enrichedMsg.id)) return prev;
+              return [...prev, enrichedMsg];
+            });
+
+            if (newMsg.sender_id !== currentUserId) {
+              router.refresh();
+              // Alert user if message is from someone else and they are in another chat tab
+              if (activeChatId !== newMsg.sender_id) {
+                const sender = members.find((m) => m.user_id === newMsg.sender_id);
+                toast.info(`Neue Nachricht von ${sender ? sender.display_name : "Mitglied"}.`);
+              }
+            }
+          } else if (payload.eventType === "DELETE") {
+            const deletedId = payload.old.id;
+            setRealtimeDMs((prev) => prev.filter((m) => m.id !== deletedId));
+            setOptimisticDMs((prev) => prev.filter((m) => m.id !== deletedId));
+            router.refresh();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(groupChannel);
+      void supabase.removeChannel(dmChannel);
+    };
+  }, [festivalId, currentUserId, members, router, activeChatId]);
 
   // Sync and filter chat messages for selected conversation
   const chatMessages = useMemo(() => {
     if (activeChatId === "group") {
-      const all = [...initialGroupMessages, ...optimisticGroupMsgs];
+      const all = [...initialGroupMessages, ...realtimeGroupMsgs, ...optimisticGroupMsgs];
       const uniqueMap = new Map<string, MessageItem>();
       all.forEach((msg) => uniqueMap.set(msg.id, msg));
       return Array.from(uniqueMap.values()).sort(
         (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
       );
     } else {
-      const all = [...initialDirectMessages, ...optimisticDMs];
+      const all = [...initialDirectMessages, ...realtimeDMs, ...optimisticDMs];
       const uniqueMap = new Map<string, MessageItem>();
       all.forEach((msg) => uniqueMap.set(msg.id, msg));
       const sorted = Array.from(uniqueMap.values()).sort(
@@ -125,7 +228,16 @@ export function FestivalChatInterface({
           (msg.sender_id === activeChatId && msg.recipient_id === currentUserId)
       );
     }
-  }, [initialDirectMessages, initialGroupMessages, optimisticDMs, optimisticGroupMsgs, currentUserId, activeChatId]);
+  }, [
+    initialDirectMessages,
+    initialGroupMessages,
+    realtimeDMs,
+    realtimeGroupMsgs,
+    optimisticDMs,
+    optimisticGroupMsgs,
+    currentUserId,
+    activeChatId
+  ]);
 
   // Scroll to bottom helper
   const scrollToBottom = () => {
@@ -136,15 +248,17 @@ export function FestivalChatInterface({
     scrollToBottom();
   }, [chatMessages, activeChatId]);
 
-  // Clear optimistic messages that are now saved on the server
+  // Clear optimistic/realtime messages that are now fully propagated from the server components
   useEffect(() => {
     const savedIds = new Set(initialDirectMessages.map((m) => m.id));
     setOptimisticDMs((prev) => prev.filter((m) => !savedIds.has(m.id)));
+    setRealtimeDMs((prev) => prev.filter((m) => !savedIds.has(m.id)));
   }, [initialDirectMessages]);
 
   useEffect(() => {
     const savedIds = new Set(initialGroupMessages.map((m) => m.id));
     setOptimisticGroupMsgs((prev) => prev.filter((m) => !savedIds.has(m.id)));
+    setRealtimeGroupMsgs((prev) => prev.filter((m) => !savedIds.has(m.id)));
   }, [initialGroupMessages]);
 
   const handleSendMessage = async (e: React.FormEvent) => {

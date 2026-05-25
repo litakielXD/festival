@@ -15,6 +15,7 @@ import { getSlotStatus } from "@/lib/timeline/status";
 import { formatDateLong } from "@/lib/format/date";
 import { acceptSlotProposal, deleteSlotProposal, submitSlotProposal } from "@/lib/actions/proposals";
 import { toast } from "@/components/ui/toast";
+import { createClient } from "@/lib/supabase/client";
 
 type TimelineSlot = {
   id: string;
@@ -156,6 +157,63 @@ export function FestivalTimelineCachedView({
     window.addEventListener("online", onOnline);
     return () => window.removeEventListener("online", onOnline);
   }, [router]);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    // Subscribe to timeline-relevant table changes to trigger reactives router refreshes
+    const timelineChannel = supabase
+      .channel(`festival-timeline-updates-${festivalId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "band_slots"
+        },
+        () => {
+          router.refresh();
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "bands"
+        },
+        () => {
+          router.refresh();
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "band_slot_proposals"
+        },
+        () => {
+          router.refresh();
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "festival_band_genres"
+        },
+        () => {
+          router.refresh();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(timelineChannel);
+    };
+  }, [festivalId, router]);
 
   return (
     <div className="space-y-4">
