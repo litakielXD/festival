@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition, useMemo } from "react";
+import { LinkifiedText } from "@/components/linkified-text";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -517,7 +518,7 @@ export function FestivalChatInterface({
                                 : "bg-slate-100 text-slate-800 rounded-tl-none dark:bg-slate-800 dark:text-slate-200"
                             }`}
                           >
-                            <p>{msg.content}</p>
+                            <LinkifiedText text={msg.content} className="break-words" />
                             
                             {/* Optimistic Sending Spinner */}
                             {msg.id.toString().startsWith("optimistic-") && (

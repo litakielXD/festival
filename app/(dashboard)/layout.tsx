@@ -17,7 +17,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     .eq("user_id", user.id)
     .maybeSingle();
   const isAdmin = isSystemAdminEmail(user.email);
-  const appName = process.env.NEXT_PUBLIC_APP_NAME || "Festival Planner";
+  const appName = process.env.NEXT_PUBLIC_APP_NAME || "Festival Quatsch";
 
   return (
     <div className="mx-auto min-h-screen max-w-6xl px-6 py-8 pb-24 md:pb-8">
@@ -26,7 +26,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <MainMenu isAdmin={isAdmin} />
           <Link
             href="/dashboard"
-            className="flex items-center gap-2 text-lg font-black tracking-tight font-display hover:text-accent transition-colors"
+            className="flex items-center gap-2 text-lg font-black tracking-tight hover:text-accent transition-colors"
           >
             <span className="text-xl">🎪</span>
             <span>{appName}</span>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LinkifiedText } from "@/components/linkified-text";
 import { FestivalNav } from "@/components/festival-nav";
 import { NotesPdfDownloadButton } from "@/components/notes-pdf-download-button";
 import { getFestivalContext } from "@/lib/supabase/queries";
@@ -214,7 +215,7 @@ export default async function FestivalOtherNotesPage({
                     <article key={`${group.personName}-${note.id}-mobile`} className="rounded-md border border-slate-300 p-3">
                       <p className="text-xs text-muted">{meta?.dayLabel ?? "Ohne Spieltag"}</p>
                       <p className="font-medium">{bandName}</p>
-                      <p className="mt-2 whitespace-pre-wrap text-sm">{note.content}</p>
+                      <p className="mt-2 whitespace-pre-wrap text-sm"><LinkifiedText text={note.content} /></p>
                     </article>
                   );
                 })}
@@ -236,7 +237,7 @@ export default async function FestivalOtherNotesPage({
                         <tr key={`${group.personName}-${note.id}-row`}>
                           <td className="border-b border-slate-200 px-3 py-2 align-top">{meta?.dayLabel ?? "Ohne Spieltag"}</td>
                           <td className="border-b border-slate-200 px-3 py-2 align-top font-medium">{bandName}</td>
-                          <td className="whitespace-pre-wrap border-b border-slate-300 px-3 py-2 align-top">{note.content}</td>
+                          <td className="whitespace-pre-wrap border-b border-slate-300 px-3 py-2 align-top"><LinkifiedText text={note.content} /></td>
                         </tr>
                       );
                     })}

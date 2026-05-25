@@ -5,7 +5,7 @@ import { ToastContainer } from "@/components/ui/toast";
 
 const syne = Syne({ subsets: ["latin"], variable: "--font-display", display: "swap" });
 
-const appName = process.env.NEXT_PUBLIC_APP_NAME || "Festival Planner";
+const appName = process.env.NEXT_PUBLIC_APP_NAME || "Festival Quatsch";
 
 export const metadata: Metadata = {
   title: appName,
