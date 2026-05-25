@@ -70,15 +70,30 @@ type SheetBandDetail = {
   festivalDayId: string;
 };
 
+const STAGE_COLORS = [
+  "bg-rose-50   border-rose-300   text-rose-700   dark:bg-rose-900/20   dark:border-rose-700   dark:text-rose-300",
+  "bg-violet-50 border-violet-300 text-violet-700 dark:bg-violet-900/20 dark:border-violet-700 dark:text-violet-300",
+  "bg-sky-50    border-sky-300    text-sky-700    dark:bg-sky-900/20    dark:border-sky-700    dark:text-sky-300",
+  "bg-amber-50  border-amber-300  text-amber-700  dark:bg-amber-900/20  dark:border-amber-700  dark:text-amber-300",
+  "bg-emerald-50 border-emerald-300 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-700 dark:text-emerald-300",
+  "bg-orange-50 border-orange-300 text-orange-700 dark:bg-orange-900/20 dark:border-orange-700 dark:text-orange-300",
+] as const;
+
+function stageColorClass(stage: string): string {
+  let hash = 0;
+  for (const c of stage) hash = ((hash * 31) + c.charCodeAt(0)) | 0;
+  return STAGE_COLORS[Math.abs(hash) % STAGE_COLORS.length];
+}
+
 function statusClasses(status: ReturnType<typeof getSlotStatus>) {
-  if (status === "running_now") return "border-success bg-green-900/30";
-  if (status === "finished") return "border-slate-300 opacity-70";
-  return "border-accent/60";
+  if (status === "running_now") return "border-green-500 bg-green-50 dark:bg-green-900/20 shadow-[0_0_0_1px_#22c55e,0_0_14px_rgba(34,197,94,0.2)]";
+  if (status === "finished") return "border-slate-200 dark:border-slate-800 opacity-60";
+  return "border-accent/40";
 }
 
 function statusLabel(status: ReturnType<typeof getSlotStatus>) {
-  if (status === "running_now") return "Laeuft jetzt";
-  if (status === "upcoming") return "Demnaechst";
+  if (status === "running_now") return "Läuft jetzt";
+  if (status === "upcoming") return "Demnächst";
   return "Vorbei";
 }
 
@@ -243,8 +258,11 @@ export function FestivalTimelineCachedView({
                   data-slot-status={status}
                   data-favorites-filterable="true"
                   data-favorite-band-id={slot.bandId}
-                  className={`rounded-md border p-3 ${statusClasses(status)} ${slotGenreAccentClass(slot.genres)}`}
+                  className={`relative overflow-hidden rounded-lg border p-3 transition-shadow ${statusClasses(status)} ${slotGenreAccentClass(slot.genres)}`}
                 >
+                  {status === "running_now" && (
+                    <div className="absolute inset-x-0 top-0 h-1 animate-pulse bg-green-500" />
+                  )}
                   <div className="flex items-center justify-between gap-2">
                     <button
                       type="button"
@@ -280,18 +298,26 @@ export function FestivalTimelineCachedView({
                         compact
                       />
                       {status === "running_now" ? (
-                        <span className="live-flicker rounded-full bg-red-600 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-white">
+                        <span className="live-flicker rounded-full bg-green-600 px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-white">
                           Live
                         </span>
                       ) : null}
                       <FestivalFavoriteButton storageKey={favoritesStorageKey} bandId={slot.bandId} />
                     </div>
                   </div>
-                  <p className="time-mono text-sm text-muted">
-                    {format(new Date(slot.startsAt), "HH:mm")} - {format(new Date(slot.endsAt), "HH:mm")}
-                    {slot.stage ? ` | ${slot.stage}` : ""}
-                  </p>
-                  <p className="text-xs uppercase tracking-wide">{statusLabel(status)}</p>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <p className="time-mono text-sm text-muted">
+                      {format(new Date(slot.startsAt), "HH:mm")} – {format(new Date(slot.endsAt), "HH:mm")}
+                    </p>
+                    {slot.stage && (
+                      <span className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-semibold ${stageColorClass(slot.stage)}`}>
+                        {slot.stage}
+                      </span>
+                    )}
+                    {status !== "running_now" && (
+                      <p className="text-xs text-muted">{statusLabel(status)}</p>
+                    )}
+                  </div>
                 </article>
               );
             })}

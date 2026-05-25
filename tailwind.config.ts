@@ -10,13 +10,16 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#d9e0ea",
-        card: "#e8eef9",
-        foreground: "#1f2a44",
-        muted: "#5f6f8c",
-        accent: "#4f73b8",
-        success: "#22c55e",
-        danger: "#ef4444"
+        background: "rgb(var(--tw-color-bg) / <alpha-value>)",
+        card:       "rgb(var(--tw-color-card) / <alpha-value>)",
+        foreground: "rgb(var(--tw-color-fg) / <alpha-value>)",
+        muted:      "rgb(var(--tw-color-muted) / <alpha-value>)",
+        accent:     "rgb(var(--tw-color-accent) / <alpha-value>)",
+        success:    "#22c55e",
+        danger:     "#ef4444"
+      },
+      fontFamily: {
+        display: ["var(--font-display)", "system-ui", "sans-serif"]
       }
     }
   },

@@ -12,7 +12,69 @@ function getAvatarColor(name: string) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
   }
   const h = Math.abs(hash) % 360;
-  return `hsl(${h}, 60%, 45%)`;
+  return `hsl(${h}, 55%, 42%)`;
+}
+
+function daysUntil(dateStr: string | null | undefined): number | null {
+  if (!dateStr) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const target = new Date(dateStr);
+  target.setHours(0, 0, 0, 0);
+  return Math.ceil((target.getTime() - today.getTime()) / 86_400_000);
+}
+
+type Festival = {
+  id: string;
+  name: string;
+  avatar_url?: string | null;
+  starts_on?: string | null;
+  ends_on?: string | null;
+};
+
+function FestivalBannerCard({
+  festival,
+  past = false
+}: {
+  festival: Festival;
+  past?: boolean;
+}) {
+  const days = daysUntil(festival.starts_on);
+  const showCountdown = !past && days !== null && days >= 0 && days <= 30;
+
+  return (
+    <Link
+      href={`/dashboard/festivals/${festival.id}/timeline`}
+      className="group block overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 hover:border-accent/50 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+    >
+      <div className="relative h-28 overflow-hidden bg-slate-200 dark:bg-slate-800">
+        {festival.avatar_url ? (
+          <img
+            src={festival.avatar_url}
+            alt={festival.name}
+            className={`h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 ${past ? "grayscale opacity-70" : ""}`}
+          />
+        ) : (
+          <div
+            className={`flex h-full w-full items-center justify-center text-3xl font-black text-white ${past ? "grayscale opacity-70" : ""}`}
+            style={{ backgroundColor: getAvatarColor(festival.name) }}
+          >
+            {getInitials(festival.name)}
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+        {showCountdown && (
+          <span className="absolute right-2 top-2 rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-white shadow">
+            {days === 0 ? "Heute!" : `In ${days}T`}
+          </span>
+        )}
+      </div>
+      <div className="p-3">
+        <p className={`truncate text-sm font-semibold ${past ? "text-muted" : ""}`}>{festival.name}</p>
+        <p className="mt-0.5 text-xs text-muted">{formatDateRange(festival.starts_on, festival.ends_on)}</p>
+      </div>
+    </Link>
+  );
 }
 
 export default async function DashboardPage() {
@@ -23,20 +85,16 @@ export default async function DashboardPage() {
   const today = new Date().toISOString().slice(0, 10);
 
   const upcomingFestivals = festivals
-    .filter((festival) => (festival.starts_on ?? festival.ends_on ?? "9999-12-31") >= today)
+    .filter((f) => (f.starts_on ?? f.ends_on ?? "9999-12-31") >= today)
     .sort((a, b) =>
-      (a.starts_on ?? a.ends_on ?? "9999-12-31").localeCompare(
-        b.starts_on ?? b.ends_on ?? "9999-12-31"
-      )
+      (a.starts_on ?? a.ends_on ?? "9999-12-31").localeCompare(b.starts_on ?? b.ends_on ?? "9999-12-31")
     )
     .slice(0, 3);
 
   const pastFestivals = festivals
-    .filter((festival) => (festival.ends_on ?? festival.starts_on ?? "0000-01-01") < today)
+    .filter((f) => (f.ends_on ?? f.starts_on ?? "0000-01-01") < today)
     .sort((a, b) =>
-      (b.ends_on ?? b.starts_on ?? "0000-01-01").localeCompare(
-        a.ends_on ?? a.starts_on ?? "0000-01-01"
-      )
+      (b.ends_on ?? b.starts_on ?? "0000-01-01").localeCompare(a.ends_on ?? a.starts_on ?? "0000-01-01")
     )
     .slice(0, 3);
 
@@ -45,150 +103,93 @@ export default async function DashboardPage() {
   return (
     <main className="space-y-8">
       {!festivals.length ? (
-        <section className="festival-card rounded-2xl p-8 text-center bg-white dark:bg-slate-950">
-          <p className="text-5xl animate-bounce">🎪</p>
-          <h2 className="mt-4 text-xl font-bold text-slate-800 dark:text-slate-100">Noch kein Festival zugewiesen</h2>
-          <p className="mt-2 text-sm text-slate-500 max-w-md mx-auto">
-            Dein Konto ist aktiv, aber du bist noch keinem Festival zugewiesen.
-            Bitte wende dich an einen Admin, damit du Zugang erhältst.
+        <section className="festival-card rounded-2xl p-10 text-center">
+          <p className="text-5xl">🎪</p>
+          <h2 className="mt-4 text-xl font-bold font-display">Noch kein Festival zugewiesen</h2>
+          <p className="mt-2 text-sm text-muted max-w-sm mx-auto">
+            Dein Konto ist aktiv. Ein Admin weist dich bald einem Festival zu — dann geht es los.
           </p>
         </section>
       ) : null}
 
       <section className="grid gap-6 md:grid-cols-3">
-        {/* 1. Kommende Festivals */}
-        <article className="festival-card rounded-2xl p-5 bg-white dark:bg-slate-950 space-y-4 flex flex-col justify-between">
-          <div className="space-y-4">
-            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 pb-2 border-b border-slate-100 dark:border-slate-800">
+        {/* Kommende Festivals */}
+        <article className="festival-card rounded-2xl p-5 space-y-4 flex flex-col justify-between">
+          <div className="space-y-3">
+            <h2 className="text-base font-bold font-display pb-2 border-b border-slate-100 dark:border-slate-800">
               Kommende Festivals
             </h2>
             <div className="space-y-3">
               {upcomingFestivals.map((festival) => (
-                <Link
-                  key={festival.id}
-                  href={`/dashboard/festivals/${festival.id}/timeline`}
-                  className="flex items-center gap-3 rounded-xl border border-slate-200/80 bg-slate-50/50 p-3 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-indigo-200 active:scale-[0.99] dark:bg-slate-900/40 dark:border-slate-850 dark:hover:border-slate-700"
-                >
-                  {festival.avatar_url ? (
-                    <img
-                      src={festival.avatar_url}
-                      alt={festival.name}
-                      className="h-10 w-10 rounded-full border border-slate-200 object-cover shrink-0"
-                    />
-                  ) : (
-                    <div
-                      className="flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold text-white shadow-sm shrink-0"
-                      style={{ backgroundColor: getAvatarColor(festival.name) }}
-                    >
-                      {getInitials(festival.name)}
-                    </div>
-                  )}
-                  <div className="overflow-hidden">
-                    <p className="font-semibold text-sm text-slate-850 dark:text-slate-250 truncate">{festival.name}</p>
-                    <p className="text-xs text-slate-400">{formatDateRange(festival.starts_on, festival.ends_on)}</p>
-                  </div>
-                </Link>
+                <FestivalBannerCard key={festival.id} festival={festival} />
               ))}
-              {!upcomingFestivals.length ? (
-                <p className="text-sm text-slate-400 py-4 text-center">Keine kommenden Festivals.</p>
-              ) : null}
+              {!upcomingFestivals.length && (
+                <p className="py-4 text-center text-sm text-muted">Keine kommenden Festivals.</p>
+              )}
             </div>
           </div>
-          <div className="pt-2">
-            <Link
-              href="/dashboard/festivals"
-              className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
-            >
-              Alle Festivals anzeigen →
-            </Link>
-          </div>
+          <Link
+            href="/dashboard/festivals"
+            className="text-xs font-semibold text-accent hover:underline underline-offset-2 transition-colors"
+          >
+            Alle Festivals →
+          </Link>
         </article>
 
-        {/* 2. Vergangene Festivals */}
-        <article className="festival-card rounded-2xl p-5 bg-white dark:bg-slate-950 space-y-4 flex flex-col justify-between">
-          <div className="space-y-4">
-            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 pb-2 border-b border-slate-100 dark:border-slate-800">
+        {/* Vergangene Festivals */}
+        <article className="festival-card rounded-2xl p-5 space-y-4 flex flex-col justify-between">
+          <div className="space-y-3">
+            <h2 className="text-base font-bold font-display pb-2 border-b border-slate-100 dark:border-slate-800">
               Vergangene Festivals
             </h2>
             <div className="space-y-3">
               {pastFestivals.map((festival) => (
-                <Link
-                  key={festival.id}
-                  href={`/dashboard/festivals/${festival.id}/timeline`}
-                  className="flex items-center gap-3 rounded-xl border border-slate-200/80 bg-slate-50/50 p-3 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-indigo-200 active:scale-[0.99] dark:bg-slate-900/40 dark:border-slate-850 dark:hover:border-slate-700"
-                >
-                  {festival.avatar_url ? (
-                    <img
-                      src={festival.avatar_url}
-                      alt={festival.name}
-                      className="h-10 w-10 rounded-full border border-slate-200 object-cover shrink-0 animate-none filter grayscale opacity-80"
-                    />
-                  ) : (
-                    <div
-                      className="flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold text-white shadow-sm shrink-0 filter grayscale opacity-75"
-                      style={{ backgroundColor: getAvatarColor(festival.name) }}
-                    >
-                      {getInitials(festival.name)}
-                    </div>
-                  )}
-                  <div className="overflow-hidden">
-                    <p className="font-semibold text-sm text-slate-650 dark:text-slate-350 truncate">{festival.name}</p>
-                    <p className="text-xs text-slate-400">{formatDateRange(festival.starts_on, festival.ends_on)}</p>
-                  </div>
-                </Link>
+                <FestivalBannerCard key={festival.id} festival={festival} past />
               ))}
-              {!pastFestivals.length ? (
-                <p className="text-sm text-slate-400 py-4 text-center">Keine vergangenen Festivals.</p>
-              ) : null}
+              {!pastFestivals.length && (
+                <p className="py-4 text-center text-sm text-muted">Keine vergangenen Festivals.</p>
+              )}
             </div>
           </div>
-          <div className="pt-2">
-            <Link
-              href="/dashboard/festivals"
-              className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
-            >
-              Alle Festivals anzeigen →
-            </Link>
-          </div>
+          <Link
+            href="/dashboard/festivals"
+            className="text-xs font-semibold text-accent hover:underline underline-offset-2 transition-colors"
+          >
+            Alle Festivals →
+          </Link>
         </article>
 
-        {/* 3. Neueste Nachrichten */}
-        <article className="festival-card rounded-2xl p-5 bg-white dark:bg-slate-950 space-y-4 flex flex-col justify-between">
-          <div className="space-y-4">
-            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 pb-2 border-b border-slate-100 dark:border-slate-800">
+        {/* Neueste Nachrichten */}
+        <article className="festival-card rounded-2xl p-5 space-y-4 flex flex-col justify-between">
+          <div className="space-y-3">
+            <h2 className="text-base font-bold font-display pb-2 border-b border-slate-100 dark:border-slate-800">
               Neueste Nachrichten
             </h2>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {latestMessages.map((message) => (
                 <Link
                   key={message.id}
                   href={`/dashboard/festivals/${message.festival_id}`}
-                  className="block rounded-xl border border-slate-200/80 bg-slate-50/50 p-3 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-indigo-200 active:scale-[0.99] dark:bg-slate-900/40 dark:border-slate-850 dark:hover:border-slate-700"
+                  className="block rounded-xl border border-slate-200/80 bg-slate-50/50 p-3 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-accent/30 dark:bg-slate-900/40 dark:border-slate-800"
                 >
-                  <p className="font-bold text-xs text-indigo-600 dark:text-indigo-400 truncate mb-1">
-                    {message.festival_name}
+                  <p className="text-[11px] font-bold text-accent truncate">{message.festival_name}</p>
+                  <p className="text-[11px] text-muted font-medium leading-tight">
+                    {message.sender_name} → {message.recipient_name}
                   </p>
-                  <p className="text-xs text-slate-400 mb-1 leading-none font-medium">
-                    {message.sender_name} an {message.recipient_name}
-                  </p>
-                  <p className="text-slate-700 dark:text-slate-350 text-sm line-clamp-2 mt-1">
-                    {message.content}
-                  </p>
+                  <p className="mt-1 text-sm line-clamp-2">{message.content}</p>
                 </Link>
               ))}
-              {!latestMessages.length ? (
-                <p className="text-sm text-slate-400 py-4 text-center">Keine Nachrichten vorhanden.</p>
-              ) : null}
+              {!latestMessages.length && (
+                <p className="py-4 text-center text-sm text-muted">Noch keine Nachrichten.</p>
+              )}
             </div>
           </div>
-          <div className="pt-2">
-            <Link
-              href="/dashboard/festivals"
-              className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
-            >
-              Alle Festival-Nachrichten anzeigen →
-            </Link>
-          </div>
+          <Link
+            href="/dashboard/festivals"
+            className="text-xs font-semibold text-accent hover:underline underline-offset-2 transition-colors"
+          >
+            Alle Festival-Nachrichten →
+          </Link>
         </article>
       </section>
     </main>

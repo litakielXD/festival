@@ -2,22 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Fresh (Standard-Hell) ─────────────────────────────── */
 :root {
-  --bg: #e5e7eb;
-  --fg: #1f2937;
-  --card-bg: #ffffff;
-  --card-border: rgba(0, 0, 0, 0.2);
-  --card-shadow: 4px 4px 0 0 rgba(0, 0, 0, 0.1);
-  --accent-neon: #22d3ee;
+  --tw-color-bg:     250 250 248;   /* #fafaf8 — warmes Off-White */
+  --tw-color-card:   255 255 255;
+  --tw-color-fg:     28  25  50;    /* fast schwarz, leicht lila */
+  --tw-color-muted:  100 108 126;
+  --tw-color-accent: 101 163 13;    /* lime-600 — guter Kontrast auf Weiß */
+
+  /* Legacy-Vars für direktes CSS */
+  --bg:          rgb(var(--tw-color-bg));
+  --fg:          rgb(var(--tw-color-fg));
+  --card-bg:     rgb(var(--tw-color-card));
+  --card-border: rgba(0, 0, 0, 0.1);
+  --card-shadow: 3px 3px 0 0 rgba(0, 0, 0, 0.06);
+  --accent-neon: rgb(var(--tw-color-accent));
 }
 
+/* ─── Warm ──────────────────────────────────────────────── */
+.accent-warm {
+  --tw-color-bg:     253 248 240;   /* #fdf8f0 — Cremeweiß */
+  --tw-color-card:   255 252 245;   /* #fffcf5 */
+  --tw-color-accent: 217 119 6;     /* amber-600 */
+  --accent-neon: #f59e0b;
+}
+
+/* ─── Dark + Fresh ──────────────────────────────────────── */
 .dark {
-  --bg: #0a0a0a;
-  --fg: #e5e7eb;
-  --card-bg: rgba(20, 20, 24, 0.88);
+  --tw-color-bg:     10  10  10;
+  --tw-color-card:   20  20  24;
+  --tw-color-fg:    229 231 235;
+  --tw-color-muted: 148 163 184;
+  --tw-color-accent: 163 230 53;    /* lime-400 — hell auf Dunkel */
+
+  --bg:          #0a0a0a;
+  --fg:          #e5e7eb;
+  --card-bg:     rgba(20, 20, 24, 0.88);
   --card-border: rgba(255, 255, 255, 0.14);
   --card-shadow: 0 10px 34px rgba(0, 0, 0, 0.45);
-  --accent-neon: #22d3ee;
+  --accent-neon: rgb(var(--tw-color-accent));
+}
+
+/* ─── Dark + Warm ───────────────────────────────────────── */
+.dark.accent-warm {
+  --tw-color-accent: 251 191 36;    /* amber-300 — hell auf Dunkel */
+  --accent-neon: #fbbf24;
 }
 
 body {
@@ -50,6 +79,7 @@ a {
 
 @layer components {
   .festival-headline {
+    font-family: var(--font-display), system-ui, sans-serif;
     @apply text-2xl font-black tracking-tight;
   }
 
@@ -84,27 +114,15 @@ a {
     background: color-mix(in srgb, var(--card-bg) 84%, #ffffff 16%);
   }
 
-  .genre-metal {
-    border-style: dashed;
-  }
-
-  .genre-techno {
+  .genre-metal   { border-style: dashed; }
+  .genre-punk    { transform: translateY(-0.5px); }
+  .genre-indie   { background: color-mix(in srgb, var(--card-bg) 80%, #f3f4f6 20%); }
+  .genre-techno  {
     border-color: color-mix(in srgb, var(--accent-neon) 58%, var(--card-border));
     box-shadow: 0 0 8px color-mix(in srgb, var(--accent-neon) 35%, transparent);
   }
 
-  .genre-punk {
-    transform: translateY(-0.5px);
-  }
-
-  .genre-indie {
-    background: color-mix(in srgb, var(--card-bg) 80%, #f3f4f6 20%);
-  }
-
-  .festival-genre-metal {
-    border-style: dashed;
-  }
-
+  .festival-genre-metal  { border-style: dashed; }
   .festival-genre-techno {
     box-shadow:
       var(--card-shadow),
@@ -122,7 +140,7 @@ a {
   }
 
   .festival-tab-link-idle {
-    @apply border-slate-300 hover:bg-slate-100;
+    @apply border-slate-300 hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800;
   }
 
   .festival-button-tactile {
@@ -138,85 +156,38 @@ a {
 }
 
 @keyframes live-flicker {
-  0%,
-  100% {
-    opacity: 1;
-    box-shadow: 0 0 0 rgba(34, 211, 238, 0);
-  }
-  9% {
-    opacity: 0.88;
-  }
-  11% {
-    opacity: 1;
-  }
-  47% {
-    opacity: 0.92;
-  }
-  50% {
-    opacity: 0.74;
-  }
-  53% {
-    opacity: 1;
-    box-shadow: 0 0 10px rgba(34, 211, 238, 0.28);
-  }
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 rgba(34, 211, 238, 0); }
+  9%        { opacity: 0.88; }
+  11%       { opacity: 1; }
+  47%       { opacity: 0.92; }
+  50%       { opacity: 0.74; }
+  53%       { opacity: 1; box-shadow: 0 0 10px color-mix(in srgb, var(--accent-neon) 40%, transparent); }
 }
 
 @keyframes tab-snap-in {
-  0% {
-    transform: translateX(8px);
-    opacity: 0.75;
-  }
-  100% {
-    transform: translateX(0);
-    opacity: 1;
-  }
+  0%   { transform: translateX(8px); opacity: 0.75; }
+  100% { transform: translateX(0);   opacity: 1; }
 }
 
+@keyframes toast-in {
+  0%   { transform: translateY(1.25rem) scale(0.95); opacity: 0; }
+  100% { transform: translateY(0) scale(1);          opacity: 1; }
+}
+
+@keyframes toast-out {
+  0%   { transform: translateY(0) scale(1);          opacity: 1; }
+  100% { transform: translateY(0.75rem) scale(0.95); opacity: 0; }
+}
+
+.animate-toast-in  { animation: toast-in  0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-toast-out { animation: toast-out 0.18s ease-in forwards; }
+
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-
-  .live-flicker {
-    animation: none !important;
-  }
-
-  .festival-tab-link-active {
-    animation: none !important;
-  }
-}
-
-@keyframes toast-in {
-  0% {
-    transform: translateY(1.25rem) scale(0.95);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes toast-out {
-  0% {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(0.75rem) scale(0.95);
-    opacity: 0;
-  }
-}
-
-.animate-toast-in {
-  animation: toast-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.animate-toast-out {
-  animation: toast-out 0.18s ease-in forwards;
+  .live-flicker, .festival-tab-link-active { animation: none !important; }
 }
