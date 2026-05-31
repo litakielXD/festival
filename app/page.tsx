@@ -24,6 +24,10 @@ export default async function HomePage() {
           </Link>
         )}
       </div>
+
+      <footer className="mt-12 text-center text-xs text-muted-foreground/60">
+        <p>Festival Planner &copy; 2026 | <a href="https://mondschule.de/impressum.html" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">Impressum</a></p>
+      </footer>
     </main>
   );
 }

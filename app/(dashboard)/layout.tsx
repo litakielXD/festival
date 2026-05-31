@@ -63,6 +63,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </div>
       </header>
       {children}
+
+      <footer className="mt-16 text-center text-xs text-muted border-t border-slate-200 dark:border-slate-800 pt-6">
+        <p>{appName} &copy; 2026 | <a href="https://mondschule.de/impressum.html" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">Impressum</a></p>
+      </footer>
     </div>
   );
 }
