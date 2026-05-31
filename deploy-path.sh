@@ -20,7 +20,7 @@ NODE_ENV=production npm run build
 
 STAND="${SRC_DIR}/.next/standalone"
 rm -rf "${STAND}/public" "${STAND}/.next/static" 2>/dev/null || true
-cp -R "${SRC_DIR}/public" "${STAND}/public"
+if [ -d "${SRC_DIR}/public" ]; then cp -R "${SRC_DIR}/public" "${STAND}/public"; fi
 mkdir -p "${STAND}/.next"
 cp -R "${SRC_DIR}/.next/static" "${STAND}/.next/static"
 
