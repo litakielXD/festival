@@ -31,7 +31,7 @@ export function FestivalMemberRoleForm({ festivalId, memberId, defaultRole }: Fe
       <select
         name="role"
         defaultValue={defaultRole}
-        className="h-7 rounded border border-slate-300 bg-slate-100 px-2 text-xs disabled:opacity-60"
+        className="form-field h-7 px-2 text-xs"
         disabled={pending}
       >
         <option value="member">member</option>

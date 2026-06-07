@@ -187,7 +187,7 @@ export default async function FestivalNotesPage({
       >
         <h2 className="font-semibold">Neue Notiz</h2>
         <input type="hidden" name="festivalId" value={festivalId} />
-        <select className="w-full rounded-md border border-slate-300 bg-slate-100 p-2" name="bandId" required>
+        <select className="form-field w-full" name="bandId" required>
           <option value="">Band wählen</option>
           {(bands ?? []).map((band) => (
             <option key={band.id} value={band.id}>
@@ -195,8 +195,8 @@ export default async function FestivalNotesPage({
             </option>
           ))}
         </select>
-        <textarea className="min-h-24 w-full rounded-md border border-slate-300 bg-slate-100 p-2" name="content" required placeholder="Notizinhalt" />
-        <select className="w-full rounded-md border border-slate-300 bg-slate-100 p-2" name="visibility" defaultValue="private">
+        <textarea className="form-field min-h-24 w-full" name="content" required placeholder="Notizinhalt" />
+        <select className="form-field w-full" name="visibility" defaultValue="private">
           <option value="private">Privat</option>
           <option value="group">Mit Festival teilen</option>
         </select>
@@ -224,13 +224,13 @@ export default async function FestivalNotesPage({
                   <input type="hidden" name="festivalId" value={festivalId} />
                   <input type="hidden" name="noteId" value={note.id} />
                   <textarea
-                    className="min-h-24 w-full rounded-md border border-slate-300 bg-slate-100 p-2"
+                    className="form-field min-h-24 w-full"
                     name="content"
                     defaultValue={note.content}
                     required
                   />
                   <div className="flex flex-col gap-2">
-                    <select className="w-full rounded-md border border-slate-300 bg-slate-100 p-2 text-sm" name="visibility" defaultValue={note.visibility}>
+                    <select className="form-field w-full" name="visibility" defaultValue={note.visibility}>
                       <option value="private">Privat</option>
                       <option value="group">Mit Festival teilen</option>
                     </select>
@@ -279,13 +279,13 @@ export default async function FestivalNotesPage({
                       <input type="hidden" name="festivalId" value={festivalId} />
                       <input type="hidden" name="noteId" value={note.id} />
                       <textarea
-                        className="min-h-20 w-full rounded-md border border-slate-300 bg-slate-100 p-2"
+                        className="form-field min-h-20 w-full"
                         name="content"
                         defaultValue={note.content}
                         required
                       />
                     <div className="flex flex-wrap items-center gap-2">
-                      <select className="rounded-md border border-slate-300 bg-slate-100 p-2 text-sm" name="visibility" defaultValue={note.visibility}>
+                      <select className="form-field" name="visibility" defaultValue={note.visibility}>
                         <option value="private">Privat</option>
                         <option value="group">Mit Festival teilen</option>
                       </select>

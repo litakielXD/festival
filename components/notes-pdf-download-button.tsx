@@ -1,7 +1,5 @@
 "use client";
 
-import { jsPDF } from "jspdf";
-
 interface NoteExportRow {
   dayLabel: string;
   bandName: string;
@@ -16,7 +14,8 @@ interface NotesPdfDownloadButtonProps {
 }
 
 export function NotesPdfDownloadButton({ filename, title, rows }: NotesPdfDownloadButtonProps) {
-  function handleDownload() {
+  async function handleDownload() {
+    const { jsPDF } = await import("jspdf");
     const doc = new jsPDF({ unit: "pt", format: "a4" });
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
