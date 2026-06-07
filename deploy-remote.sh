@@ -24,7 +24,7 @@ set -euo pipefail
 REMOTE_HOST="${REMOTE_HOST:-178.254.6.104}"
 REMOTE_USER="${REMOTE_USER:-lita}"
 REMOTE_PORT="${REMOTE_PORT:-22}"
-REMOTE_PROJECT_DIR="${REMOTE_PROJECT_DIR:-/var/www/mondschule.de/public_html/festival}"
+REMOTE_PROJECT_DIR="${REMOTE_PROJECT_DIR:-/var/www/festival.mondschule.de}"
 REMOTE_SERVICE_NAME="${REMOTE_SERVICE_NAME:-festival}"
 
 TARGET="$REMOTE_USER@$REMOTE_HOST"
