@@ -183,26 +183,37 @@ export default async function FestivalNotesPage({
       </div>
       <form
         action={createFestivalNote as unknown as (fd: FormData) => Promise<void>}
-        className="space-y-3 rounded-lg border border-slate-300 bg-card p-4"
+        className="rounded-lg border border-slate-300 bg-card p-4"
       >
-        <h2 className="font-semibold">Neue Notiz</h2>
+        <h2 className="mb-3 font-semibold">Neue Notiz</h2>
         <input type="hidden" name="festivalId" value={festivalId} />
-        <select className="form-field w-full" name="bandId" required>
-          <option value="">Band wählen</option>
-          {(bands ?? []).map((band) => (
-            <option key={band.id} value={band.id}>
-              {band.name}
-            </option>
-          ))}
-        </select>
-        <textarea className="form-field min-h-24 w-full" name="content" required placeholder="Notizinhalt" />
-        <select className="form-field w-full" name="visibility" defaultValue="private">
-          <option value="private">Privat</option>
-          <option value="group">Mit Festival teilen</option>
-        </select>
-        <Button type="submit" disabled={!(bands ?? []).length}>
-          Notiz speichern
-        </Button>
+        <div className="space-y-2">
+          <label className="block text-xs font-medium text-muted">Band</label>
+          <select className="form-field w-full" name="bandId" required>
+            <option value="">Band wählen…</option>
+            {(bands ?? []).map((band) => (
+              <option key={band.id} value={band.id}>
+                {band.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="mt-3 space-y-2">
+          <label className="block text-xs font-medium text-muted">Notiz</label>
+          <textarea className="form-field min-h-28 w-full" name="content" required placeholder="Was fällt dir auf? Setlist-Wunsch, Treffpunkt, …" />
+        </div>
+        <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <label className="block text-xs font-medium text-muted">Sichtbarkeit</label>
+            <select className="form-field" name="visibility" defaultValue="private">
+              <option value="private">🔒 Nur ich</option>
+              <option value="group">👥 Festival-Gruppe</option>
+            </select>
+          </div>
+          <Button type="submit" disabled={!(bands ?? []).length} className="sm:self-end">
+            Notiz speichern
+          </Button>
+        </div>
       </form>
 
       <section className="rounded-lg border border-slate-300 bg-card p-4">

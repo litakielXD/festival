@@ -109,7 +109,7 @@ export async function addFestivalMember(formData: FormData) {
 }
 
 export async function addFestivalMemberWithState(
-  _previousState: FestivalMemberActionState = defaultFestivalMemberActionState,
+  _: FestivalMemberActionState = defaultFestivalMemberActionState,
   formData: FormData
 ): Promise<FestivalMemberActionState> {
   const result = await addFestivalMember(formData);
@@ -184,7 +184,7 @@ export async function updateFestivalMemberRole(formData: FormData) {
 }
 
 export async function updateFestivalMemberRoleWithState(
-  _previousState: FestivalMemberActionState = defaultFestivalMemberActionState,
+  _: FestivalMemberActionState = defaultFestivalMemberActionState,
   formData: FormData
 ): Promise<FestivalMemberActionState> {
   const result = await updateFestivalMemberRole(formData);

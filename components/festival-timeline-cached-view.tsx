@@ -241,7 +241,7 @@ export function FestivalTimelineCachedView({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Band suchen …"
-            className="w-full rounded-lg border border-slate-300 bg-card px-3 py-1.5 text-sm placeholder:text-muted focus:border-accent focus:outline-none dark:border-slate-700"
+            className="form-field w-full px-3 py-1.5"
           />
           {searchQuery && (
             <button
@@ -333,12 +333,12 @@ export function FestivalTimelineCachedView({
                     </div>
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-2">
-                    <p className="time-mono text-sm text-muted">
+                    <p className="time-mono text-sm font-medium">
                       {format(new Date(slot.startsAt), "HH:mm")} – {format(new Date(slot.endsAt), "HH:mm")}
                     </p>
                     {slot.stage && (
-                      <span className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-semibold ${stageColorClass(slot.stage)}`}>
-                        {slot.stage}
+                      <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-semibold ${stageColorClass(slot.stage)}`}>
+                        📍 {slot.stage}
                       </span>
                     )}
                     {status !== "running_now" && (

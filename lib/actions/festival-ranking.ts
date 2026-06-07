@@ -89,7 +89,7 @@ export async function saveFestivalBandRanking(formData: FormData) {
 }
 
 export async function saveFestivalBandRankingWithState(
-  _previousState: FestivalRankingActionState = defaultFestivalRankingActionState,
+  _: FestivalRankingActionState = defaultFestivalRankingActionState,
   formData: FormData
 ): Promise<FestivalRankingActionState> {
   const result = await saveFestivalBandRanking(formData);

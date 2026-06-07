@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { festivalFavoritesStorageKey } from "@/lib/favorites/storage-key";
 
 type FavoritesChangedDetail = { storageKey: string };
 
