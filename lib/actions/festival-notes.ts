@@ -45,6 +45,7 @@ export async function updateFestivalNote(formData: FormData) {
   const noteId = String(formData.get("noteId") || "").trim();
   const content = String(formData.get("content") || "").trim();
   const visibility = String(formData.get("visibility") || "private") === "group" ? "group" : "private";
+  const newBandId = String(formData.get("bandId") || "").trim();
 
   if (!festivalId || !noteId || !content) return { error: "Notiz konnte nicht aktualisiert werden." };
 
@@ -56,9 +57,17 @@ export async function updateFestivalNote(formData: FormData) {
     .maybeSingle();
   if (!membership) return { error: "Kein Zugriff auf dieses Festival." };
 
+  const updatePayload: Record<string, string> = { content, visibility };
+
+  if (newBandId) {
+    const allowedBandIds = await getFestivalBandIds(supabase, festivalId);
+    if (!allowedBandIds.includes(newBandId)) return { error: "Band gehört nicht zu diesem Festival." };
+    updatePayload.band_id = newBandId;
+  }
+
   const { error } = await supabase
     .from("notes")
-    .update({ content, visibility })
+    .update(updatePayload)
     .eq("id", noteId)
     .eq("author_id", user.id);
   if (error) return { error: error.message };

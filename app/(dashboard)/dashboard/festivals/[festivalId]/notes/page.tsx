@@ -234,6 +234,14 @@ export default async function FestivalNotesPage({
                 >
                   <input type="hidden" name="festivalId" value={festivalId} />
                   <input type="hidden" name="noteId" value={note.id} />
+                  <div className="space-y-1">
+                    <label className="block text-xs font-medium text-muted">Band</label>
+                    <select className="form-field w-full" name="bandId" defaultValue={note.band_id}>
+                      {(bands ?? []).map((band) => (
+                        <option key={band.id} value={band.id}>{band.name}</option>
+                      ))}
+                    </select>
+                  </div>
                   <textarea
                     className="form-field min-h-24 w-full"
                     name="content"
@@ -242,8 +250,8 @@ export default async function FestivalNotesPage({
                   />
                   <div className="flex flex-col gap-2">
                     <select className="form-field w-full" name="visibility" defaultValue={note.visibility}>
-                      <option value="private">Privat</option>
-                      <option value="group">Mit Festival teilen</option>
+                      <option value="private">🔒 Nur ich</option>
+                      <option value="group">👥 Festival-Gruppe</option>
                     </select>
                     <Button type="submit" className="w-full">
                       Speichern
@@ -289,19 +297,27 @@ export default async function FestivalNotesPage({
                     >
                       <input type="hidden" name="festivalId" value={festivalId} />
                       <input type="hidden" name="noteId" value={note.id} />
+                      <div className="space-y-1">
+                        <label className="block text-xs font-medium text-muted">Band</label>
+                        <select className="form-field w-full" name="bandId" defaultValue={note.band_id}>
+                          {(bands ?? []).map((band) => (
+                            <option key={band.id} value={band.id}>{band.name}</option>
+                          ))}
+                        </select>
+                      </div>
                       <textarea
                         className="form-field min-h-20 w-full"
                         name="content"
                         defaultValue={note.content}
                         required
                       />
-                    <div className="flex flex-wrap items-center gap-2">
-                      <select className="form-field" name="visibility" defaultValue={note.visibility}>
-                        <option value="private">Privat</option>
-                        <option value="group">Mit Festival teilen</option>
-                      </select>
-                      <Button type="submit">Speichern</Button>
-                    </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <select className="form-field" name="visibility" defaultValue={note.visibility}>
+                          <option value="private">🔒 Nur ich</option>
+                          <option value="group">👥 Festival-Gruppe</option>
+                        </select>
+                        <Button type="submit">Speichern</Button>
+                      </div>
                     </form>
                     <form
                       action={deleteFestivalNote as unknown as (fd: FormData) => Promise<void>}
