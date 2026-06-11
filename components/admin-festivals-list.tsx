@@ -203,7 +203,7 @@ export function AdminFestivalsList({
 
   const handleDeleteFestival = async (festivalId: string, festivalName: string) => {
     const confirmDelete = window.confirm(
-      `WARNUNG: Möchtest du "${festivalName}" wirklich unwiderruflich löschen?\nAlle zugewiesenen Personen, Bands, Slots und Notizen gehen verloren!`
+      `WARNUNG: Möchtest du "${festivalName}" wirklich unwiderruflich löschen?\nAlle zugewiesenen Personen, Bands, Slots und Hausaufgaben gehen verloren!`
     );
     if (!confirmDelete) return;
 

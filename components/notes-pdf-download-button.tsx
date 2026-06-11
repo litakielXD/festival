@@ -56,7 +56,7 @@ export function NotesPdfDownloadButton({ filename, title, rows }: NotesPdfDownlo
       doc.text("Spieltag", left + 6, y + 14);
       doc.text("Band", left + colDay + 6, y + 14);
       doc.text("Autor", left + colDay + colBand + 6, y + 14);
-      doc.text("Notiz", left + colDay + colBand + colAuthor + 6, y + 14);
+      doc.text("Hausaufgabe", left + colDay + colBand + colAuthor + 6, y + 14);
       y += 22;
     };
 
@@ -78,7 +78,7 @@ export function NotesPdfDownloadButton({ filename, title, rows }: NotesPdfDownlo
 
     if (!rows.length) {
       drawPageTitle();
-      doc.text("Keine Notizen in der aktuellen Ansicht vorhanden.", left, y);
+      doc.text("Keine Hausaufgaben in der aktuellen Ansicht vorhanden.", left, y);
       doc.save(filename);
       return;
     }

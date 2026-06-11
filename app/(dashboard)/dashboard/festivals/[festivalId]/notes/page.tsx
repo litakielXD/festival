@@ -147,18 +147,18 @@ export default async function FestivalNotesPage({
 
   return (
     <main className="space-y-4">
-      <h1 className="text-2xl font-semibold">{festival.name} - Notizen</h1>
+      <h1 className="text-2xl font-semibold">{festival.name} - Hausaufgaben</h1>
       <FestivalNav festivalId={festivalId} />
       <div className="flex flex-wrap items-center gap-2">
         <Link
           href={`/dashboard/festivals/${festivalId}/notes/others`}
           className="rounded-md border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100"
         >
-          Notizen der anderen
+          Hausaufgaben der anderen
         </Link>
         <NotesPdfDownloadButton
-          filename={`notizen-${festival.name.replace(/\s+/g, "-").toLowerCase()}.pdf`}
-          title={`${festival.name} - Notizen`}
+          filename={`hausaufgaben-${festival.name.replace(/\s+/g, "-").toLowerCase()}.pdf`}
+          title={`${festival.name} - Hausaufgaben`}
           rows={exportRows}
         />
         <div className="flex items-center gap-2">
@@ -187,7 +187,7 @@ export default async function FestivalNotesPage({
         action={createFestivalNote as unknown as (fd: FormData) => Promise<void>}
         className="rounded-lg border border-slate-300 bg-card p-4"
       >
-        <h2 className="mb-3 font-semibold">Neue Notiz</h2>
+        <h2 className="mb-3 font-semibold">Neue Hausaufgabe</h2>
         <input type="hidden" name="festivalId" value={festivalId} />
         <div className="space-y-2">
           <label className="block text-xs font-medium text-muted">Band</label>
@@ -200,7 +200,7 @@ export default async function FestivalNotesPage({
               return (
                 <>
                   {withNote.length > 0 && (
-                    <optgroup label="✓ Notiz vorhanden">
+                    <optgroup label="✓ Hausaufgabe vorhanden">
                       {withNote.map((band) => (
                         <option key={band.id} value={band.id} style={{ backgroundColor: "#dcfce7", color: "#166534" }}>
                           {band.name}
@@ -209,7 +209,7 @@ export default async function FestivalNotesPage({
                     </optgroup>
                   )}
                   {withoutNote.length > 0 && (
-                    <optgroup label="○ Noch keine Notiz">
+                    <optgroup label="○ Noch keine Hausaufgabe">
                       {withoutNote.map((band) => (
                         <option key={band.id} value={band.id}>
                           {band.name}
@@ -223,7 +223,7 @@ export default async function FestivalNotesPage({
           </select>
         </div>
         <div className="mt-3 space-y-2">
-          <label className="block text-xs font-medium text-muted">Notiz</label>
+          <label className="block text-xs font-medium text-muted">Hausaufgabe</label>
           <textarea className="form-field min-h-28 w-full" name="content" required placeholder="Was fällt dir auf? Setlist-Wunsch, Treffpunkt, …" />
         </div>
         <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -235,14 +235,14 @@ export default async function FestivalNotesPage({
             </select>
           </div>
           <Button type="submit" disabled={!(bands ?? []).length} className="sm:self-end">
-            Notiz speichern
+            Hausaufgabe speichern
           </Button>
         </div>
       </form>
 
       <section className="rounded-lg border border-slate-300 bg-card p-4">
         <h2 className="mb-3 text-lg font-semibold">
-          Meine Notizen ({sortMode === "alpha" ? "alphabetisch" : "nach Timetable"})
+          Meine Hausaufgaben ({sortMode === "alpha" ? "alphabetisch" : "nach Timetable"})
         </h2>
         <div className="space-y-3 md:hidden">
           {sortedNotes.map((note) => {
@@ -289,13 +289,13 @@ export default async function FestivalNotesPage({
                   <input type="hidden" name="festivalId" value={festivalId} />
                   <input type="hidden" name="noteId" value={note.id} />
                   <Button type="submit" variant="danger" className="w-full">
-                    Notiz löschen
+                    Hausaufgabe löschen
                   </Button>
                 </form>
               </article>
             );
           })}
-          {!sortedNotes.length ? <p className="text-sm text-muted">Noch keine Notizen vorhanden.</p> : null}
+          {!sortedNotes.length ? <p className="text-sm text-muted">Noch keine Hausaufgaben vorhanden.</p> : null}
         </div>
         <div className="hidden overflow-x-auto rounded-md border border-slate-300 md:block">
           <table className="w-full border-collapse text-sm">
@@ -350,7 +350,7 @@ export default async function FestivalNotesPage({
                       <input type="hidden" name="festivalId" value={festivalId} />
                       <input type="hidden" name="noteId" value={note.id} />
                         <Button type="submit" variant="danger">
-                          Notiz löschen
+                          Hausaufgabe löschen
                         </Button>
                     </form>
                   </td>
@@ -360,7 +360,7 @@ export default async function FestivalNotesPage({
           {!sortedNotes.length ? (
             <tr>
               <td colSpan={3} className="px-3 py-3 text-sm text-muted">
-                Noch keine Notizen vorhanden.
+                Noch keine Hausaufgaben vorhanden.
               </td>
             </tr>
           ) : null}

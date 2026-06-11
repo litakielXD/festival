@@ -15,7 +15,7 @@ export function FestivalNav({ festivalId }: FestivalNavProps) {
     { href: base, label: "Mitglieder" },
     { href: `${base}/timeline`, label: "Timeline" },
     { href: `${base}/bands`, label: "Ranking" },
-    { href: `${base}/notes`, label: "Notizen" }
+    { href: `${base}/notes`, label: "Hausaufgaben" }
   ];
 
   return (

@@ -47,7 +47,7 @@ export async function updateFestivalNote(formData: FormData) {
   const visibility = String(formData.get("visibility") || "private") === "group" ? "group" : "private";
   const newBandId = String(formData.get("bandId") || "").trim();
 
-  if (!festivalId || !noteId || !content) return { error: "Notiz konnte nicht aktualisiert werden." };
+  if (!festivalId || !noteId || !content) return { error: "Hausaufgabe konnte nicht aktualisiert werden." };
 
   const { data: membership } = await supabase
     .from("festival_members")
@@ -82,7 +82,7 @@ export async function deleteFestivalNote(formData: FormData) {
   const festivalId = String(formData.get("festivalId") || "").trim();
   const noteId = String(formData.get("noteId") || "").trim();
 
-  if (!festivalId || !noteId) return { error: "Notiz konnte nicht gelöscht werden." };
+  if (!festivalId || !noteId) return { error: "Hausaufgabe konnte nicht gelöscht werden." };
 
   const { data: membership } = await supabase
     .from("festival_members")

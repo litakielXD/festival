@@ -165,15 +165,15 @@ export default async function FestivalOtherNotesPage({
 
   return (
     <main className="space-y-4">
-      <h1 className="text-2xl font-semibold">{festival.name} - Notizen der anderen</h1>
+      <h1 className="text-2xl font-semibold">{festival.name} - Hausaufgaben der anderen</h1>
       <FestivalNav festivalId={festivalId} />
       <div className="flex flex-wrap items-center gap-2">
         <Link href={`/dashboard/festivals/${festivalId}/notes`} className="rounded-md border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100">
-          Zurück zu meinen Notizen
+          Zurück zu meinen Hausaufgaben
         </Link>
         <NotesPdfDownloadButton
-          filename={`notizen-der-anderen-${festival.name.replace(/\s+/g, "-").toLowerCase()}.pdf`}
-          title={`${festival.name} - Notizen der anderen`}
+          filename={`hausaufgaben-der-anderen-${festival.name.replace(/\s+/g, "-").toLowerCase()}.pdf`}
+          title={`${festival.name} - Hausaufgaben der anderen`}
           rows={exportRows}
         />
         <div className="flex items-center gap-2">
@@ -201,7 +201,7 @@ export default async function FestivalOtherNotesPage({
 
       <section className="rounded-lg border border-slate-300 bg-card p-4">
         <h2 className="mb-3 text-lg font-semibold">
-          Notiz-Überblick (nach Person, dann {sortMode === "alpha" ? "alphabetisch" : "Timetable"})
+          Hausaufgaben-Überblick (nach Person, dann {sortMode === "alpha" ? "alphabetisch" : "Timetable"})
         </h2>
         <div className="space-y-4">
           {groupedByPerson.map((group) => (
@@ -246,7 +246,7 @@ export default async function FestivalOtherNotesPage({
               </div>
             </section>
           ))}
-          {!groupedByPerson.length ? <p className="text-sm text-muted">Noch keine Notizen vorhanden.</p> : null}
+          {!groupedByPerson.length ? <p className="text-sm text-muted">Noch keine Hausaufgaben vorhanden.</p> : null}
         </div>
       </section>
     </main>
