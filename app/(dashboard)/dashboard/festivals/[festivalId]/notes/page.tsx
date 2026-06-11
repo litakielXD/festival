@@ -132,6 +132,8 @@ export default async function FestivalNotesPage({
     return (aMeta?.createdAt ?? "").localeCompare(bMeta?.createdAt ?? "");
   });
 
+  const notesBandIdSet = new Set(notes.map((n) => n.band_id));
+
   const exportRows = sortedNotes.map((note) => {
     const meta = bandMetaById.get(note.band_id);
     const bandName = meta?.bandName ?? (Array.isArray(note.bands) ? note.bands[0]?.name : note.bands?.name) ?? "Unbekannte Band";
@@ -191,11 +193,33 @@ export default async function FestivalNotesPage({
           <label className="block text-xs font-medium text-muted">Band</label>
           <select className="form-field w-full" name="bandId" required>
             <option value="">Band wählen…</option>
-            {(bands ?? []).map((band) => (
-              <option key={band.id} value={band.id}>
-                {band.name}
-              </option>
-            ))}
+            {(() => {
+              const allBands = bands ?? [];
+              const withNote = allBands.filter((b) => notesBandIdSet.has(b.id));
+              const withoutNote = allBands.filter((b) => !notesBandIdSet.has(b.id));
+              return (
+                <>
+                  {withNote.length > 0 && (
+                    <optgroup label="✓ Notiz vorhanden">
+                      {withNote.map((band) => (
+                        <option key={band.id} value={band.id} style={{ backgroundColor: "#dcfce7", color: "#166534" }}>
+                          {band.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                  {withoutNote.length > 0 && (
+                    <optgroup label="○ Noch keine Notiz">
+                      {withoutNote.map((band) => (
+                        <option key={band.id} value={band.id}>
+                          {band.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                </>
+              );
+            })()}
           </select>
         </div>
         <div className="mt-3 space-y-2">
