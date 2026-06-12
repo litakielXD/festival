@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { LinkifiedText } from "@/components/linkified-text";
 import { FestivalNav } from "@/components/festival-nav";
 import { NotesPdfDownloadButton } from "@/components/notes-pdf-download-button";
@@ -107,7 +108,29 @@ export default async function FestivalOtherNotesPage({
   const authorIds = Array.from(new Set(notes.map((n) => n.author_id)));
   if (authorIds.length) {
     const { data: profiles } = await supabase.from("profiles").select("user_id,display_name").in("user_id", authorIds);
-    const map = new Map((profiles ?? []).map((p) => [p.user_id, p.display_name]));
+    const map = new Map((profiles ?? []).filter((p) => p.display_name).map((p) => [p.user_id, p.display_name as string]));
+
+    const missingIds = authorIds.filter((id) => !map.has(id));
+    if (missingIds.length) {
+      const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      if (serviceRoleKey) {
+        const admin = createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceRoleKey, {
+          auth: { persistSession: false, autoRefreshToken: false }
+        });
+        const { data: { users } } = await admin.auth.admin.listUsers({ perPage: 1000 });
+        for (const user of users) {
+          if (missingIds.includes(user.id)) {
+            const name =
+              (user.user_metadata?.display_name as string | undefined) ||
+              user.email?.split("@")[0] ||
+              user.email ||
+              "Unbekannt";
+            map.set(user.id, name);
+          }
+        }
+      }
+    }
+
     notes = notes.map((n) => ({ ...n, author_name: map.get(n.author_id) ?? "Unbekannt" }));
   }
 
