@@ -129,13 +129,7 @@ export function ProfileSettingsForm({
             fieldName="avatarUrl"
             pathPrefix="profiles"
             initialAvatarUrl={avatarUrl || null}
-          />
-          {/* This handler updates local state so the input is controlled */}
-          <input
-            type="hidden"
-            name="avatarUrl"
-            value={avatarUrl}
-            onChange={(e) => setAvatarUrl(e.target.value)}
+            onUrlChange={setAvatarUrl}
           />
 
           <div className="space-y-1">

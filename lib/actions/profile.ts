@@ -39,6 +39,7 @@ export async function upsertProfile(formData: FormData) {
   });
 
   revalidatePath("/dashboard/profile");
+  revalidatePath("/dashboard", "layout");
   return { success: true };
 }
 

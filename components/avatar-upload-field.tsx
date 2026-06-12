@@ -10,6 +10,7 @@ interface AvatarUploadFieldProps {
   fieldName?: string;
   label?: string;
   pathPrefix?: string;
+  onUrlChange?: (url: string) => void;
 }
 
 export function AvatarUploadField({
@@ -17,7 +18,8 @@ export function AvatarUploadField({
   initialAvatarUrl,
   fieldName = "avatarUrl",
   label = "Profilbild",
-  pathPrefix = "profile"
+  pathPrefix = "profile",
+  onUrlChange
 }: AvatarUploadFieldProps) {
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl ?? "");
   const [isUploading, setIsUploading] = useState(false);
@@ -89,6 +91,7 @@ export function AvatarUploadField({
 
     const { data } = supabase.storage.from("avatars").getPublicUrl(path);
     setAvatarUrl(data.publicUrl);
+    onUrlChange?.(data.publicUrl);
     setIsUploading(false);
   }
 
