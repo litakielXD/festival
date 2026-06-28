@@ -49,12 +49,12 @@ export function FestivalBandGenreAdd({
   if (atMax) {
     return (
       <span className="inline-flex items-center gap-1">
-        <span className="rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 text-[11px] text-muted">{countLabel}</span>
+        <span className="rounded border border-slate-300 bg-slate-50 dark:bg-slate-800 dark:border-slate-600 px-1.5 py-0.5 text-[11px] text-muted">{countLabel}</span>
         <button
           type="button"
           disabled
           title="Maximal 3 Genres erreicht"
-          className={`rounded-md border border-dashed border-slate-300 bg-slate-50 px-2 py-1 text-sm text-muted opacity-60 ${
+          className={`rounded-md border border-dashed border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 px-2 py-1 text-sm text-muted opacity-60 ${
             compact ? "min-h-9 min-w-9" : ""
           }`}
           aria-label="Maximal 3 Genres erreicht"
@@ -68,14 +68,14 @@ export function FestivalBandGenreAdd({
   if (!open) {
     return (
       <span className="inline-flex items-center gap-1">
-        <span className="rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 text-[11px] text-muted">{countLabel}</span>
+        <span className="rounded border border-slate-300 bg-slate-50 dark:bg-slate-800 dark:border-slate-600 px-1.5 py-0.5 text-[11px] text-muted">{countLabel}</span>
         <button
           type="button"
           onClick={() => {
             setOpen(true);
           }}
           title="Genre hinzufügen"
-          className={`rounded-md border border-dashed border-slate-400 bg-white px-2 py-1 text-sm font-medium text-slate-700 hover:bg-slate-50 ${
+          className={`rounded-md border border-dashed border-slate-400 dark:border-slate-500 bg-white dark:bg-slate-800 px-2 py-1 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 ${
             compact ? "min-h-9 min-w-9" : ""
           }`}
           aria-label="Genre hinzufügen"
@@ -96,7 +96,7 @@ export function FestivalBandGenreAdd({
         maxLength={48}
         placeholder="Genre"
         disabled={pending}
-        className="min-w-[6rem] max-w-[10rem] rounded border border-slate-300 px-2 py-1 text-xs"
+        className="min-w-[6rem] max-w-[10rem] rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 px-2 py-1 text-xs"
         aria-label="Neues Genre"
         onKeyDown={(e) => {
           if (e.key === "Enter") {
@@ -113,7 +113,7 @@ export function FestivalBandGenreAdd({
         type="button"
         disabled={pending}
         onClick={submit}
-        className="rounded border border-slate-300 bg-slate-100 px-2 py-1 text-xs hover:bg-slate-200 disabled:opacity-50"
+        className="rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 px-2 py-1 text-xs hover:bg-slate-200 dark:hover:bg-slate-600 disabled:opacity-50"
       >
         {pending ? "…" : "OK"}
       </button>

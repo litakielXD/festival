@@ -35,7 +35,7 @@ export function FestivalMemberAssignmentForm({ festivalId, people }: FestivalMem
       <input type="hidden" name="festivalId" value={festivalId} />
       <PersonAutocompleteField people={people} name="identifier" placeholder="Name oder E-Mail zuweisen" />
       <button
-        className="rounded-md border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100 disabled:opacity-60"
+        className="rounded-md border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-60"
         type="submit"
         disabled={pending}
       >

@@ -152,7 +152,7 @@ export default async function FestivalNotesPage({
       <div className="flex flex-wrap items-center gap-2">
         <Link
           href={`/dashboard/festivals/${festivalId}/notes/others`}
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100"
+          className="rounded-md border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-800"
         >
           Hausaufgaben der anderen
         </Link>
@@ -167,7 +167,7 @@ export default async function FestivalNotesPage({
             <Link
               href={`/dashboard/festivals/${festivalId}/notes?sort=timetable`}
               className={`px-3 py-2 text-sm ${
-                sortMode === "timetable" ? "bg-slate-200 text-slate-900" : "bg-card text-slate-700 hover:bg-slate-100"
+                sortMode === "timetable" ? "bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-100" : "bg-card text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
               }`}
             >
               Timetable
@@ -299,7 +299,7 @@ export default async function FestivalNotesPage({
         </div>
         <div className="hidden overflow-x-auto rounded-md border border-slate-300 md:block">
           <table className="w-full border-collapse text-sm">
-            <thead className="bg-slate-100 text-left">
+            <thead className="bg-slate-100 dark:bg-slate-800 text-left">
               <tr>
                 <th className="border-b border-slate-300 px-3 py-2 font-medium">Spieltag</th>
                 <th className="border-b border-slate-300 px-3 py-2 font-medium">Band</th>

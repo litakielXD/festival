@@ -61,7 +61,7 @@ export function PersonAutocompleteField({
             <button
               key={person.user_id}
               type="button"
-              className="block w-full rounded px-2 py-2 text-left text-sm hover:bg-slate-100"
+              className="block w-full rounded px-2 py-2 text-left text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"
               onMouseDown={(event) => {
                 event.preventDefault();
                 setQuery(person.email);

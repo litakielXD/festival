@@ -38,7 +38,7 @@ export function FestivalMemberRoleForm({ festivalId, memberId, defaultRole }: Fe
         <option value="admin">admin</option>
       </select>
       <button
-        className="h-7 rounded border border-slate-300 px-2 text-xs hover:bg-slate-100 disabled:opacity-60"
+        className="h-7 rounded border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 px-2 text-xs hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-60"
         type="submit"
         disabled={pending}
       >

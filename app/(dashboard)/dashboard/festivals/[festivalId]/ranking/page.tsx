@@ -78,7 +78,7 @@ export default async function FestivalRankingPage({
       <FestivalNav festivalId={festivalId} />
       <Link
         href={`/dashboard/festivals/${festivalId}/bands`}
-        className="inline-block rounded-md border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100"
+        className="inline-block rounded-md border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-800"
       >
         Zurück zu Bands
       </Link>

@@ -438,7 +438,7 @@ export function FestivalTimelineCachedView({
                       return (
                         <span
                           key={entry.id}
-                          className="inline-flex items-center gap-1 rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 text-[11px]"
+                          className="inline-flex items-center gap-1 rounded border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 text-[11px]"
                         >
                           {entry.genre}
                           {removable ? (
@@ -468,7 +468,7 @@ export function FestivalTimelineCachedView({
                                 setGenreActionMessage("Genre entfernt.");
                                 router.refresh();
                               }}
-                              className="rounded border border-slate-300 px-1 text-[10px] hover:bg-slate-100 disabled:opacity-50"
+                              className="rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 px-1 text-[10px] hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50"
                               aria-label={`Genre ${entry.genre} entfernen`}
                               title="Eigenen Eintrag entfernen"
                             >
@@ -709,7 +709,7 @@ export function FestivalTimelineCachedView({
             <button
               type="button"
               onClick={() => setSheetBand(null)}
-              className="mt-4 w-full rounded-md border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100"
+              className="mt-4 w-full rounded-md border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-800"
             >
               Schließen
             </button>

@@ -69,7 +69,7 @@ export function FestivalFavoriteButton({
       aria-label={isFavorite ? "Aus Favoriten entfernen" : "Zu Favoriten hinzufügen"}
       title={isFavorite ? "Aus Favoriten entfernen" : "Zu Favoriten hinzufügen"}
       className={`festival-button-tactile rounded-md border px-2 py-1 text-sm ${
-        isFavorite ? "border-amber-500 bg-amber-100 text-amber-700" : "border-slate-300 text-slate-600 hover:bg-slate-100"
+        isFavorite ? "border-amber-500 bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400" : "border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
       }`}
     >
       {isFavorite ? "♥" : "♡"}
@@ -132,7 +132,7 @@ export function FestivalFavoritesFilterToggle({
       <button
         type="button"
         onClick={() => updateMode("all")}
-        className={`festival-button-tactile px-3 py-1.5 text-sm ${mode === "all" ? "bg-slate-200 font-semibold text-slate-900" : "bg-white text-slate-600 hover:bg-slate-100"}`}
+        className={`festival-button-tactile px-3 py-1.5 text-sm ${mode === "all" ? "bg-slate-200 dark:bg-slate-700 font-semibold text-slate-900 dark:text-slate-100" : "bg-white dark:bg-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"}`}
       >
         Alle Acts
       </button>
