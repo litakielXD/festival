@@ -25,7 +25,7 @@ type TimelineSlot = {
   genreContributions: Array<{ id: string; genre: string; createdBy: string }>;
   stage: string | null;
   startsAt: string;
-  endsAt: string;
+  endsAt: string | null;
 };
 
 type TimelineBand = {
@@ -51,7 +51,7 @@ type SlotProposal = {
   festivalDayId: string;
   stage: string | null;
   startsAt: string;
-  endsAt: string;
+  endsAt: string | null;
   suggestedBy: string;
   suggestedByName: string;
 };
@@ -64,7 +64,7 @@ type SheetBandDetail = {
   dayLabel: string;
   date: string;
   startsAt?: string;
-  endsAt?: string;
+  endsAt?: string | null;
   stage?: string | null;
   status?: ReturnType<typeof getSlotStatus>;
   festivalDayId: string;
@@ -334,7 +334,7 @@ export function FestivalTimelineCachedView({
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-2">
                     <p className="time-mono text-sm font-medium">
-                      {format(new Date(slot.startsAt), "HH:mm")} – {format(new Date(slot.endsAt), "HH:mm")}
+                      {format(new Date(slot.startsAt), "HH:mm")} – {slot.endsAt ? format(new Date(slot.endsAt), "HH:mm") : "mal sehen …"}
                     </p>
                     {slot.stage && (
                       <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-semibold ${stageColorClass(slot.stage)}`}>
@@ -486,9 +486,9 @@ export function FestivalTimelineCachedView({
             <p className="text-sm text-muted">
               {sheetBand.dayLabel} ({formatDateLong(sheetBand.date)})
             </p>
-            {sheetBand.startsAt && sheetBand.endsAt ? (
+            {sheetBand.startsAt ? (
               <p className="time-mono mt-2 text-sm">
-                {format(new Date(sheetBand.startsAt), "HH:mm")} - {format(new Date(sheetBand.endsAt), "HH:mm")}
+                {format(new Date(sheetBand.startsAt), "HH:mm")} – {sheetBand.endsAt ? format(new Date(sheetBand.endsAt), "HH:mm") : "mal sehen …"}
                 {sheetBand.stage ? ` | ${sheetBand.stage}` : ""}
               </p>
             ) : (
@@ -518,7 +518,7 @@ export function FestivalTimelineCachedView({
                           >
                             <div>
                               <p className="font-medium text-xs">
-                                {format(new Date(prop.startsAt), "HH:mm")} - {format(new Date(prop.endsAt), "HH:mm")}
+                                {format(new Date(prop.startsAt), "HH:mm")} – {prop.endsAt ? format(new Date(prop.endsAt), "HH:mm") : "mal sehen …"}
                                 {prop.stage ? ` | ${prop.stage}` : ""}
                               </p>
                               <p className="text-[10px] text-muted">von {prop.suggestedByName}</p>
@@ -582,7 +582,7 @@ export function FestivalTimelineCachedView({
                           <div className="rounded-md border border-accent-neon/30 bg-accent-neon/5 p-3">
                             <p className="text-[10px] font-bold text-accent-neon uppercase tracking-wider mb-1">Dein Vorschlag</p>
                             <p className="font-semibold text-xs">
-                              {format(new Date(myProp.startsAt), "HH:mm")} - {format(new Date(myProp.endsAt), "HH:mm")} Uhr
+                              {format(new Date(myProp.startsAt), "HH:mm")} – {myProp.endsAt ? format(new Date(myProp.endsAt), "HH:mm") + " Uhr" : "mal sehen …"}
                               {myProp.stage ? ` | ${myProp.stage}` : ""}
                             </p>
                             <form

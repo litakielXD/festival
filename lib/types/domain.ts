@@ -35,7 +35,7 @@ export interface BandSlot {
   festival_day_id: string;
   stage: string | null;
   starts_at: string;
-  ends_at: string;
+  ends_at: string | null;
 }
 
 export interface BandNote {
