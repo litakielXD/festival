@@ -1,4 +1,4 @@
-export type GenreKey = "metal" | "techno" | "punk" | "indie" | "other";
+export type GenreKey = "metal" | "techno" | "punk" | "indie" | "rock" | "other";
 
 export function normalizeGenre(input: string | null | undefined): GenreKey {
   const value = String(input ?? "").trim().toLowerCase();
@@ -10,6 +10,7 @@ export function normalizeGenre(input: string | null | undefined): GenreKey {
   }
   if (value.includes("punk") || value.includes("post-punk")) return "punk";
   if (value.includes("indie") || value.includes("alternative") || value.includes("alt")) return "indie";
+  if (value.includes("rock")) return "rock";
   return "other";
 }
 

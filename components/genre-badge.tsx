@@ -7,6 +7,7 @@ function genreIcon(key: GenreKey) {
   if (key === "techno") return "∿";
   if (key === "punk") return "🧷";
   if (key === "indie") return "✦";
+  if (key === "rock") return "🎸";
   return "•";
 }
 
