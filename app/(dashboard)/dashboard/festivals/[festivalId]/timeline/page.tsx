@@ -26,7 +26,7 @@ export default async function FestivalTimelinePage({ params }: { params: Promise
       genreContributions: Array<{ id: string; genre: string; createdBy: string }>;
       stage: string | null;
       startsAt: string;
-      endsAt: string | null;
+      endsAt: string;
     }>;
     unscheduled: Array<{
       id: string;
@@ -42,7 +42,7 @@ export default async function FestivalTimelinePage({ params }: { params: Promise
     festivalDayId: string;
     stage: string | null;
     startsAt: string;
-    endsAt: string | null;
+    endsAt: string;
     suggestedBy: string;
     suggestedByName: string;
   }> = [];
@@ -115,7 +115,7 @@ export default async function FestivalTimelinePage({ params }: { params: Promise
       band_id: string;
       stage: string | null;
       starts_at: string;
-      ends_at: string | null;
+      ends_at: string;
       festival_day_id: string;
       bands: { name: string } | { name: string }[] | null;
     };
