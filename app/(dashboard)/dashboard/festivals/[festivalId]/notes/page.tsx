@@ -1,10 +1,11 @@
-import { createFestivalNote, deleteFestivalNote, updateFestivalNote } from "@/lib/actions/festival-notes";
+import { createFestivalNote } from "@/lib/actions/festival-notes";
 import { FestivalNav } from "@/components/festival-nav";
 import { getFestivalContext } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { NotesPdfDownloadButton } from "@/components/notes-pdf-download-button";
+import { FestivalNotesList } from "@/components/festival-notes-list";
 
 export default async function FestivalNotesPage({
   params,
@@ -134,12 +135,20 @@ export default async function FestivalNotesPage({
 
   const notesBandIdSet = new Set(notes.map((n) => n.band_id));
 
-  const exportRows = sortedNotes.map((note) => {
+  const notesWithMeta = sortedNotes.map((note) => {
     const meta = bandMetaById.get(note.band_id);
-    const bandName = meta?.bandName ?? (Array.isArray(note.bands) ? note.bands[0]?.name : note.bands?.name) ?? "Unbekannte Band";
     return {
+      ...note,
+      bandName: meta?.bandName ?? (Array.isArray(note.bands) ? note.bands[0]?.name : note.bands?.name) ?? "Unbekannte Band",
       dayLabel: meta?.dayLabel ?? "Ohne Spieltag",
-      bandName,
+      dayDate: meta?.dayDate ?? "9999-12-31"
+    };
+  });
+
+  const exportRows = notesWithMeta.map((note) => {
+    return {
+      dayLabel: note.dayLabel,
+      bandName: note.bandName,
       authorName: note.author_name ?? "Unbekannt",
       content: note.content
     };
@@ -244,129 +253,11 @@ export default async function FestivalNotesPage({
         <h2 className="mb-3 text-lg font-semibold">
           Meine Hausaufgaben ({sortMode === "alpha" ? "alphabetisch" : "nach Timetable"})
         </h2>
-        <div className="space-y-3 md:hidden">
-          {sortedNotes.map((note) => {
-            const meta = bandMetaById.get(note.band_id);
-            const bandName = meta?.bandName ?? (Array.isArray(note.bands) ? note.bands[0]?.name : note.bands?.name) ?? "Unbekannte Band";
-            return (
-              <article key={`${note.id}-mobile`} className="rounded-md border border-slate-300 p-3">
-                <p className="text-xs text-muted">{meta?.dayLabel ?? "Ohne Spieltag"}</p>
-                <p className="mb-2 font-medium">{bandName}</p>
-                <form
-                  action={updateFestivalNote as unknown as (fd: FormData) => Promise<void>}
-                  className="space-y-2"
-                >
-                  <input type="hidden" name="festivalId" value={festivalId} />
-                  <input type="hidden" name="noteId" value={note.id} />
-                  <div className="space-y-1">
-                    <label className="block text-xs font-medium text-muted">Band</label>
-                    <select className="form-field w-full" name="bandId" defaultValue={note.band_id}>
-                      {(bands ?? []).map((band) => (
-                        <option key={band.id} value={band.id}>{band.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <textarea
-                    className="form-field min-h-24 w-full"
-                    name="content"
-                    defaultValue={note.content}
-                    required
-                  />
-                  <div className="flex flex-col gap-2">
-                    <select className="form-field w-full" name="visibility" defaultValue={note.visibility}>
-                      <option value="private">🔒 Nur ich</option>
-                      <option value="group">👥 Festival-Gruppe</option>
-                    </select>
-                    <Button type="submit" className="w-full">
-                      Speichern
-                    </Button>
-                  </div>
-                </form>
-                <form
-                  action={deleteFestivalNote as unknown as (fd: FormData) => Promise<void>}
-                  className="mt-2"
-                >
-                  <input type="hidden" name="festivalId" value={festivalId} />
-                  <input type="hidden" name="noteId" value={note.id} />
-                  <Button type="submit" variant="danger" className="w-full">
-                    Hausaufgabe löschen
-                  </Button>
-                </form>
-              </article>
-            );
-          })}
-          {!sortedNotes.length ? <p className="text-sm text-muted">Noch keine Hausaufgaben vorhanden.</p> : null}
-        </div>
-        <div className="hidden overflow-x-auto rounded-md border border-slate-300 md:block">
-          <table className="w-full border-collapse text-sm">
-            <thead className="bg-slate-100 dark:bg-slate-800 text-left">
-              <tr>
-                <th className="border-b border-slate-300 px-3 py-2 font-medium">Spieltag</th>
-                <th className="border-b border-slate-300 px-3 py-2 font-medium">Band</th>
-                <th className="border-b border-slate-300 px-3 py-2 font-medium">Kommentar</th>
-              </tr>
-            </thead>
-            <tbody>
-          {sortedNotes.map((note) => {
-            const meta = bandMetaById.get(note.band_id);
-            const bandName = meta?.bandName ?? (Array.isArray(note.bands) ? note.bands[0]?.name : note.bands?.name) ?? "Unbekannte Band";
-            return (
-                <tr key={`${note.id}-row`} className="bg-card">
-                  <td className="border-b border-slate-200 px-3 py-2 align-top">{meta?.dayLabel ?? "Ohne Spieltag"}</td>
-                  <td className="border-b border-slate-200 px-3 py-2 align-top font-medium">{bandName}</td>
-                  <td className="border-b border-slate-200 px-3 py-2 align-top">
-                    <form
-                      action={updateFestivalNote as unknown as (fd: FormData) => Promise<void>}
-                      className="space-y-2"
-                    >
-                      <input type="hidden" name="festivalId" value={festivalId} />
-                      <input type="hidden" name="noteId" value={note.id} />
-                      <div className="space-y-1">
-                        <label className="block text-xs font-medium text-muted">Band</label>
-                        <select className="form-field w-full" name="bandId" defaultValue={note.band_id}>
-                          {(bands ?? []).map((band) => (
-                            <option key={band.id} value={band.id}>{band.name}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <textarea
-                        className="form-field min-h-20 w-full"
-                        name="content"
-                        defaultValue={note.content}
-                        required
-                      />
-                      <div className="flex flex-wrap items-center gap-2">
-                        <select className="form-field" name="visibility" defaultValue={note.visibility}>
-                          <option value="private">🔒 Nur ich</option>
-                          <option value="group">👥 Festival-Gruppe</option>
-                        </select>
-                        <Button type="submit">Speichern</Button>
-                      </div>
-                    </form>
-                    <form
-                      action={deleteFestivalNote as unknown as (fd: FormData) => Promise<void>}
-                      className="mt-2"
-                    >
-                      <input type="hidden" name="festivalId" value={festivalId} />
-                      <input type="hidden" name="noteId" value={note.id} />
-                        <Button type="submit" variant="danger">
-                          Hausaufgabe löschen
-                        </Button>
-                    </form>
-                  </td>
-                </tr>
-            );
-          })}
-          {!sortedNotes.length ? (
-            <tr>
-              <td colSpan={3} className="px-3 py-3 text-sm text-muted">
-                Noch keine Hausaufgaben vorhanden.
-              </td>
-            </tr>
-          ) : null}
-            </tbody>
-          </table>
-        </div>
+        <FestivalNotesList
+          initialNotes={notesWithMeta}
+          bands={bands ?? []}
+          festivalId={festivalId}
+        />
       </section>
     </main>
   );

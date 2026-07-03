@@ -98,3 +98,39 @@ export async function deleteFestivalNote(formData: FormData) {
   revalidatePath(`/dashboard/festivals/${festivalId}/notes`);
   return { success: true };
 }
+
+export async function batchUpdateFestivalNoteVisibility(formData: FormData) {
+  const user = await requireUser();
+  const supabase = await createClient();
+
+  const festivalId = String(formData.get("festivalId") || "").trim();
+  const visibility = String(formData.get("visibility") || "private") === "group" ? "group" : "private";
+  const noteIds = formData
+    .getAll("noteIds")
+    .map((value) => String(value).trim())
+    .filter(Boolean);
+
+  if (!festivalId || !noteIds.length) {
+    return { error: "Keine Hausaufgaben ausgewählt." };
+  }
+
+  const { data: membership } = await supabase
+    .from("festival_members")
+    .select("user_id")
+    .eq("festival_id", festivalId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (!membership) return { error: "Kein Zugriff auf dieses Festival." };
+
+  const { error } = await supabase
+    .from("notes")
+    .update({ visibility })
+    .in("id", noteIds)
+    .eq("author_id", user.id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/dashboard/festivals/${festivalId}/notes`);
+  return { success: true };
+}
+
